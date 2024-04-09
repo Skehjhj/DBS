@@ -1,0 +1,114 @@
+SET DATEFORMAT dmy;
+DROP TABLE UserTable;
+CREATE      TABLE       UserTable (
+  userID    INTEGER     PRIMARY KEY,
+  mail      VARCHAR(255) CHECK (email LIKE '%@hcmut.edu.vn'),
+  name      VARCHAR(255),
+  DoB       DATE,
+  sex       VARCHAR(10)
+);
+
+ALTER TABLE User
+ADD CONSTRAINT CK_Sex
+CHECK (sex IN ('Male', 'Female'));
+
+insert into UserTable (userID, mail, name, DoB, sex) values (1, 'bsedger0@hcmut.edu.vn', 'Brina Sedger', '29-01-2024', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (2, 'gwinterscale1@hcmut.edu.vn', 'Gabriello Winterscale', '18-02-2024', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (3, 'imishaw2@hcmut.edu.vn', 'Ingunna Mishaw', '13-05-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (4, 'sponceford3@hcmut.edu.vn', 'Stanislas Ponceford', '11-05-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (5, 'bmainstone4@hcmut.edu.vn', 'Brenna Mainstone', '08-11-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (6, 'alayfield5@hcmut.edu.vn', 'Arlan Layfield', '29-07-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (7, 'rvalasek6@hcmut.edu.vn', 'Rubi Valasek', '11-10-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (8, 'yhowood7@hcmut.edu.vn', 'Yankee Howood', '03-11-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (9, 'fmaclennan8@hcmut.edu.vn', 'Ferne MacLennan', '10-12-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (10, 'cgurg9@hcmut.edu.vn', 'Charil Gurg', '15-03-2024', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (11, 'adaverina@hcmut.edu.vn', 'Austine Daverin', '04-12-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (12, 'lpembridgeb@hcmut.edu.vn', 'Leonore Pembridge', '30-10-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (13, 'hricioppoc@hcmut.edu.vn', 'Heindrick Ricioppo', '13-05-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (14, 'cbickerdicked@hcmut.edu.vn', 'Cortie Bickerdicke', '05-03-2024', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (15, 'foglessanee@hcmut.edu.vn', 'Fonzie O''Glessane', '21-11-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (16, 'gcoaref@hcmut.edu.vn', 'Garvy Coare', '28-08-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (17, 'fberang@hcmut.edu.vn', 'Faythe Beran', '19-03-2024', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (18, 'dcoochh@hcmut.edu.vn', 'Donni Cooch', '24-07-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (19, 'kkitsoni@hcmut.edu.vn', 'Karry Kitson', '26-07-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (20, 'eflecknellj@hcmut.edu.vn', 'Elfreda Flecknell', '15-08-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (21, 'mfredsonk@hcmut.edu.vn', 'Marilin Fredson', '06-10-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (22, 'ctamblynl@hcmut.edu.vn', 'Celesta Tamblyn', '28-11-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (23, 'gumbertm@hcmut.edu.vn', 'Gloriane Umbert', '29-08-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (24, 'maldrittn@hcmut.edu.vn', 'Merla Aldritt', '20-10-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (25, 'cpenticooto@hcmut.edu.vn', 'Case Penticoot', '31-08-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (26, 'takasterp@hcmut.edu.vn', 'Tabbitha Akaster', '13-02-2024', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (27, 'rferraiq@hcmut.edu.vn', 'Rich Ferrai', '23-01-2024', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (28, 'spettigreer@hcmut.edu.vn', 'Spense Pettigree', '14-09-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (29, 'elibbies@hcmut.edu.vn', 'Ebenezer Libbie', '08-07-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (30, 'agoldstert@hcmut.edu.vn', 'Amalita Goldster', '29-03-2024', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (31, 'lhedgeu@hcmut.edu.vn', 'Lilli Hedge', '23-09-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (32, 'cgresswellv@hcmut.edu.vn', 'Carolina Gresswell', '16-12-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (33, 'lpardyw@hcmut.edu.vn', 'Lorrie Pardy', '22-11-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (34, 'ashowtx@hcmut.edu.vn', 'Alf Showt', '05-08-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (35, 'ystarrsy@hcmut.edu.vn', 'Yorgos Starrs', '13-08-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (36, 'sallsworthz@hcmut.edu.vn', 'Susan Allsworth', '30-10-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (37, 'lmacailine10@hcmut.edu.vn', 'Lazare MacAiline', '15-05-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (38, 'ntonks11@hcmut.edu.vn', 'Nealy Tonks', '01-10-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (39, 'bjanodet12@hcmut.edu.vn', 'Bax Janodet', '18-05-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (40, 'shupka13@hcmut.edu.vn', 'Sterne Hupka', '04-10-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (41, 'lfausch14@hcmut.edu.vn', 'Leland Fausch', '26-11-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (42, 'bklaggeman15@hcmut.edu.vn', 'Binnie Klaggeman', '25-01-2024', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (43, 'ralessandretti16@hcmut.edu.vn', 'Rufe Alessandretti', '29-07-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (44, 'lsarginson17@hcmut.edu.vn', 'Leilah Sarginson', '28-09-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (45, 'rbernardeau18@hcmut.edu.vn', 'Raquela Bernardeau', '29-02-2024', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (46, 'hselman19@hcmut.edu.vn', 'Hugues Selman', '02-04-2024', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (47, 'dstealy1a@hcmut.edu.vn', 'Davey Stealy', '13-08-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (48, 'nrheaume1b@hcmut.edu.vn', 'Northrup Rheaume', '23-05-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (49, 'bmccalister1c@hcmut.edu.vn', 'Beck McCalister', '04-08-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (50, 'kdurrans1d@hcmut.edu.vn', 'Karney Durrans', '16-10-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (51, 'rdymoke1e@hcmut.edu.vn', 'Reinald Dymoke', '27-10-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (52, 'dgolbourn1f@hcmut.edu.vn', 'Derick Golbourn', '20-02-2024', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (53, 'hwolfindale1g@hcmut.edu.vn', 'Harriott Wolfindale', '25-09-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (54, 'rgowling1h@hcmut.edu.vn', 'Roosevelt Gowling', '17-02-2024', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (55, 'ldalston1i@hcmut.edu.vn', 'Leeann Dalston', '23-05-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (56, 'emuncey1j@hcmut.edu.vn', 'Eydie Muncey', '05-04-2024', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (57, 'lphlippi1k@hcmut.edu.vn', 'Linus Phlippi', '25-12-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (58, 'wginie1l@hcmut.edu.vn', 'Walliw Ginie', '25-01-2024', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (59, 'gwaterworth1m@hcmut.edu.vn', 'Gayler Waterworth', '01-03-2024', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (60, 'ktreppas1n@hcmut.edu.vn', 'Kevan Treppas', '02-03-2024', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (61, 'abelamy1o@hcmut.edu.vn', 'Aron Belamy', '27-07-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (62, 'gyeude1p@hcmut.edu.vn', 'Gerald Yeude', '23-12-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (63, 'jmaccall1q@hcmut.edu.vn', 'Jada MacCall', '23-06-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (64, 'bpastor1r@hcmut.edu.vn', 'Beckie Pastor', '29-06-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (65, 'pwarlaw1s@hcmut.edu.vn', 'Pavel Warlaw', '26-12-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (66, 'dbarniss1t@hcmut.edu.vn', 'Darn Barniss', '05-08-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (67, 'wmoynihan1u@hcmut.edu.vn', 'Wandie Moynihan', '25-02-2024', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (68, 'mdondon1v@hcmut.edu.vn', 'Mirna Dondon', '28-05-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (69, 'gpenticoot1w@hcmut.edu.vn', 'Gregg Penticoot', '02-11-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (70, 'tmchirrie1x@hcmut.edu.vn', 'Thelma M''Chirrie', '10-10-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (71, 'sguice1y@hcmut.edu.vn', 'Sarene Guice', '22-03-2024', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (72, 'bbicheno1z@hcmut.edu.vn', 'Barnie Bicheno', '11-08-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (73, 'pblackmuir20@hcmut.edu.vn', 'Pooh Blackmuir', '27-04-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (74, 'nofergus21@hcmut.edu.vn', 'Nell O''Fergus', '11-02-2024', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (75, 'spedracci22@hcmut.edu.vn', 'Sheri Pedracci', '29-09-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (76, 'elambie23@hcmut.edu.vn', 'Ermanno Lambie', '25-04-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (77, 'epach24@hcmut.edu.vn', 'Eliza Pach', '24-08-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (78, 'stredinnick25@hcmut.edu.vn', 'Sayers Tredinnick', '08-05-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (79, 'bshead26@hcmut.edu.vn', 'Bordie Shead', '28-02-2024', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (80, 'osilverwood27@hcmut.edu.vn', 'Otto Silverwood', '20-09-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (81, 'tthomazin28@hcmut.edu.vn', 'Thayne Thomazin', '10-01-2024', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (82, 'ktremoille29@hcmut.edu.vn', 'Kimberlyn Tremoille', '24-02-2024', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (83, 'rtrowl2a@hcmut.edu.vn', 'Reynard Trowl', '24-12-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (84, 'ekorn2b@hcmut.edu.vn', 'Edwina Korn', '02-09-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (85, 'vvittle2c@hcmut.edu.vn', 'Valina Vittle', '03-02-2024', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (86, 'mmadgwick2d@hcmut.edu.vn', 'Matt Madgwick', '29-02-2024', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (87, 'pperrone2e@hcmut.edu.vn', 'Philomena Perrone', '29-02-2024', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (88, 'ediperaus2f@hcmut.edu.vn', 'Eduard Diperaus', '29-03-2024', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (89, 'aiannazzi2g@hcmut.edu.vn', 'Amelie Iannazzi', '27-06-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (90, 'mkuna2h@hcmut.edu.vn', 'Merrie Kuna', '25-07-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (91, 'ysanches2i@hcmut.edu.vn', 'York Sanches', '23-06-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (92, 'tglaves2j@hcmut.edu.vn', 'Tersina Glaves', '18-07-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (93, 'hbrownhall2k@hcmut.edu.vn', 'Heidi Brownhall', '12-04-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (94, 'nbreadon2l@hcmut.edu.vn', 'Nan Breadon', '13-07-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (95, 'iambrosio2m@hcmut.edu.vn', 'Irving Ambrosio', '17-08-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (96, 'kvittore2n@hcmut.edu.vn', 'Kristy Vittore', '30-04-2023', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (97, 'fjura2o@hcmut.edu.vn', 'Frants Jura', '04-03-2024', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (98, 'daxford2p@hcmut.edu.vn', 'Dolph Axford', '10-04-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (99, 'gaizikovitch2q@hcmut.edu.vn', 'Garth Aizikovitch', '05-11-2023', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (100, 'etupman2r@hcmut.edu.vn', 'Eb Tupman', '05-06-2023', 'Male');

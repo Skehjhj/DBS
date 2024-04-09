@@ -1,0 +1,10 @@
+﻿CourseID,Name,Howtomark,Credit,Prerequisites,MinAttendance
+CSCI101,Introduction to Psychology,NASDAQ,1,NULL,72
+MATH200,Advanced Calculus,NYSE,1,NULL,70
+ENG101,Digital Marketing Strategies,NASDAQ,4,NULL,8
+ART150,History of Ancient Civilizations,NYSE,2,NULL,29
+HIST300,Creative Writing Workshop,NASDAQ,3,ART150,42
+PHYS201,Photography Basics,NYSE,3,NULL,95
+PSYC250,Nutrition and Wellness,NYSE,4,PHYS201,97
+CHEM110,Music Theory Fundamentals,NYSE,4,NULL,53
+BUS300,Introduction to Computer Science,NYSE,2,SOC101,35
