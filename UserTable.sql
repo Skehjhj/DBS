@@ -12,8 +12,8 @@ ALTER TABLE User
 ADD CONSTRAINT CK_Sex
 CHECK (sex IN ('Male', 'Female'));
 
-insert into UserTable (userID, mail, name, DoB, sex) values (1, 'bsedger0@hcmut.edu.vn', 'Brina Sedger', '29-01-2024', 'Female');
-insert into UserTable (userID, mail, name, DoB, sex) values (2, 'gwinterscale1@hcmut.edu.vn', 'Gabriello Winterscale', '18-02-2024', 'Male');
+insert into UserTable (userID, mail, name, DoB, sex) values (GV001, 'bsedger0@hcmut.edu.vn', 'Brina Sedger', '29-01-2024', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values (1, 'gwinterscale1@hcmut.edu.vn', 'Gabriello Winterscale', '18-02-2024', 'Male');
 insert into UserTable (userID, mail, name, DoB, sex) values (3, 'imishaw2@hcmut.edu.vn', 'Ingunna Mishaw', '13-05-2023', 'Female');
 insert into UserTable (userID, mail, name, DoB, sex) values (4, 'sponceford3@hcmut.edu.vn', 'Stanislas Ponceford', '11-05-2023', 'Male');
 insert into UserTable (userID, mail, name, DoB, sex) values (5, 'bmainstone4@hcmut.edu.vn', 'Brenna Mainstone', '08-11-2023', 'Female');
