@@ -153,8 +153,10 @@ CREATE TABLE StuWork(
   Score INTEGER
 );
 
+/*
 ALTER TABLE Test
 ADD CONSTRAINT fk_test_score FOREIGN KEY (Score) REFERENCES StuWork (Score)
+*/
 
 --- Continues ---
 
