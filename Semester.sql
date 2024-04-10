@@ -3,6 +3,7 @@ CREATE TABLE Semester(
     StartDate DATE,
     EndDate DATE,
 );
+
 insert into Semester (SemesterID, StartDate, EndDate) values (191, '05-09-2019', '31-12-2019');
 insert into Semester (SemesterID, StartDate, EndDate) values (192, '01-01-2020', '21-06-2020');
 insert into Semester (SemesterID, StartDate, EndDate) values (193, '22-06-2020', '02-09-2020');

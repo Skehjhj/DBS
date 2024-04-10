@@ -10,7 +10,7 @@ CREATE TABLE Course (
   MinAttendance  INTEGER
 );
 ALTER TABLE Course
-ALTER COLUMN Prerequisites VCHAR(6) NULL;
+ALTER COLUMN Prerequisites CHAR(10) NULL;
 
 
 insert into Course (CourseID, Name, Howtomark, Credit, Prerequisites, MinAttendance) values ('CSC101', 'Introduction to Psychology', 'NASDAQ', 1, NULL, 72);
