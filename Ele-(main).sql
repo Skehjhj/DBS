@@ -4,7 +4,7 @@ use lms;
 
 SET DATEFORMAT dmy;
 CREATE      TABLE       UserTable (
-  userID    CHAR(5)   PRIMARY KEY,
+  userID    CHAR(9)   PRIMARY KEY,
   mail      VARCHAR(255),
   name      VARCHAR(255),
   DoB       DATE,
@@ -21,12 +21,12 @@ CHECK (sex IN ('Male', 'Female'));
 CREATE TABLE Message(
     MessageID INTEGER PRIMARY KEY,
     Content VARCHAR(255),
-    SenderID CHAR(5),
+    SenderID CHAR(9),
     CONSTRAINT fk_sender_user_SenderID FOREIGN KEY (SenderID) REFERENCES UserTable (userID),
 );
 
 CREATE TABLE Receiver(
-  ReceiverID CHAR(5),
+  ReceiverID CHAR(9),
   CONSTRAINT fk_receiver_user_ReceiverID FOREIGN KEY (ReceiverID) REFERENCES UserTable (userID),
   MessageID INTEGER,
   CONSTRAINT fk_receiver_message_MessageID FOREIGN KEY (MessageID) REFERENCES Message (MessageID),
@@ -34,14 +34,14 @@ CREATE TABLE Receiver(
 )
 
 CREATE      TABLE       Professor (
-  ProfID    CHAR(5)    PRIMARY KEY,
+  ProfID    CHAR(9)    PRIMARY KEY,
   CONSTRAINT   fk_prof_user_ProfID   FOREIGN KEY
                             (ProfID) REFERENCES UserTable (userID),
   Degree      VARCHAR(255),
 );
 
 CREATE      TABLE       Student (
-  StuID    CHAR(5)     PRIMARY KEY,
+  StuID    CHAR(9)     PRIMARY KEY,
   CONSTRAINT   fk_stu_user_StuID   FOREIGN KEY
                             (StuID) REFERENCES UserTable (userID),
   StuStatus     VARCHAR(255),
@@ -54,7 +54,7 @@ CREATE      TABLE      Class (
   Classroom  CHAR(3),
   Capacity   INTEGER,
   CourseID  CHAR(10),
-  ProfID    CHAR(5),
+  ProfID    CHAR(9),
   CONSTRAINT   fk_class_prof_ProfID   FOREIGN KEY
                             (ProfID) REFERENCES Professor (ProfID),
 );
@@ -89,7 +89,7 @@ ADD CONSTRAINT   fk_class_course_CourseID   FOREIGN KEY
                             (CourseID) REFERENCES Course (CourseID)
 
 CREATE      TABLE       Teach (
-  ProfID    CHAR(5),
+  ProfID    CHAR(9),
   CONSTRAINT   fk_teach_prof_ProfID   FOREIGN KEY
                             (ProfID) REFERENCES Professor (ProfID),
   CourseID  CHAR(10),
@@ -101,64 +101,43 @@ CREATE      TABLE       Teach (
 
 --?---
 
+CREATE TABLE TestBank(
+  TestID INTEGER PRIMARY KEY,
+  Context VARCHAR(255),
+  Answer VARCHAR(255),
+);
+
+CREATE TABLE StuWork(
+  StuID CHAR(9) REFERENCES Student (StuID),
+  TestID INTEGER REFERENCES TestBank (TestID),
+  TimesID INTEGER,
+  PRIMARY KEY (StuID, TestID, TimesID),
+  StuWork VARCHAR(255),
+  DoTime TIME,
+  DoneTime DATE,
+  Score INTEGER
+);
+
 CREATE TABLE Test(
     TestID INTEGER PRIMARY KEY,
+    CONSTRAINT fk_test_testbank_TestID FOREIGN KEY (TestID) REFERENCES TestBank (TestID),
     SendStatus BIT,
     MarkStatus BIT,
-    TestType VARCHAR(255),
-    DoTime TIME,
     Deadline DATE,
     Score INTEGER,
+    CONSTRAINT fk_test_stuwork_Score FOREIGN KEY (Score) REFERENCES StuWork (Score),
     ClassID  INTEGER,
     CONSTRAINT fk_test_class_ClassID FOREIGN KEY
                             (ClassID) REFERENCES Class (ClassID)
 );
 
-CREATE TABLE QuizBank(
-  QuizID INTEGER PRIMARY KEY,
-  --TypeofQ VARCHAR(255), T nghi bh chi dung multiple choice thoi
-  Context VARCHAR(255),
-  Answer CHAR(1),
-);
-
-ALTER TABLE QuizBank
-ADD CONSTRAINT CK_Anwser
-CHECK (Answer IN ('A', 'B', 'C', 'D', 'E'));
 
 
-CREATE TABLE Quiz (
-  TestID INTEGER,
-  QuizID INTEGER,
-  PRIMARY KEY (TestID, QuizID), -- Composite primary key
-  CONSTRAINT fk_quiz_test_TestID FOREIGN KEY (TestID) REFERENCES Test (TestID),
-  CONSTRAINT fk_quiz_quizbank_QuizID FOREIGN KEY (QuizID) REFERENCES QuizBank (QuizID),
-);
-
-
-CREATE TABLE StuWork(
-  StuID CHAR(5) REFERENCES Student (StuID),
-  TestID INTEGER REFERENCES Test (TestID),
-  TimesID INTEGER,
-  PRIMARY KEY (StuID, TestID, TimesID),
-  StuWork VARCHAR(255),
-  DoneTime DATE,
-  Score INTEGER
-);
-
-<<<<<<< HEAD
-/*
-ALTER TABLE Test
-ADD CONSTRAINT fk_test_score FOREIGN KEY (Score) REFERENCES StuWork (Score)
-*/
-=======
--- ALTER TABLE Test
--- ADD CONSTRAINT fk_test_score FOREIGN KEY (Score) REFERENCES StuWork (Score)
->>>>>>> 56e899f18c2b27ee5f848e39f0f87b2cd7741a80
 
 --- Continues ---
 
 CREATE TABLE Study(
-    StuID CHAR(5) REFERENCES Student (StuID),
+    StuID CHAR(9) REFERENCES Student (StuID),
     ClassID INTEGER REFERENCES Class (ClassID),
     CONSTRAINT pk_study PRIMARY KEY (StuID, ClassID)
 );
