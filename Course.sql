@@ -3,9 +3,6 @@ CREATE TABLE Course (
   Name      VARCHAR(255),
   Howtomark     VARCHAR(255),
   Credit     INTEGER,
-  SemesterID        INTEGER,
-  CONSTRAINT   fk_course_semester_SemesterID   FOREIGN KEY
-                            (SemesterID) REFERENCES Semester (SemesterID),
   Prerequisites CHAR(6) REFERENCES Course (CourseID),
   MinAttendance  INTEGER
 );

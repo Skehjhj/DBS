@@ -12,7 +12,6 @@ CREATE      TABLE       UserTable (
 );
 
 
-
 ALTER TABLE UserTable
 ADD CONSTRAINT CK_Sex
 CHECK (sex IN ('Male', 'Female'));
@@ -48,23 +47,6 @@ CREATE      TABLE       Student (
   Major        VARCHAR(255),
 );
 
-
-CREATE      TABLE      Class (
-  ClassID    INTEGER     PRIMARY KEY,
-  Classroom  CHAR(3),
-  Capacity   INTEGER,
-  CourseID  CHAR(10),
-  ProfID    CHAR(9),
-  CONSTRAINT   fk_class_prof_ProfID   FOREIGN KEY
-                            (ProfID) REFERENCES Professor (ProfID),
-);
-
-/*
-CREATE TABLE DatetoLearn(
-
-)
-*/
-
 CREATE TABLE Semester(
     SemesterID INTEGER PRIMARY KEY,
     StartDate DATE,
@@ -76,28 +58,22 @@ CREATE      TABLE       Course (
   Name      VARCHAR(255),
   Howtomark     VARCHAR(255),
   Credit     INTEGER,
-  SemesterID        INTEGER,
-  CONSTRAINT   fk_course_semester_SemesterID   FOREIGN KEY
-                            (SemesterID) REFERENCES Semester (SemesterID),
   Prerequisites CHAR(10) NULL  REFERENCES Course (CourseID),
   MinAttendance  INTEGER,
 );
 
-
-ALTER TABLE Class
-ADD CONSTRAINT   fk_class_course_CourseID   FOREIGN KEY
-                            (CourseID) REFERENCES Course (CourseID)
-
-CREATE      TABLE       Teach (
-  ProfID    CHAR(9),
-  CONSTRAINT   fk_teach_prof_ProfID   FOREIGN KEY
-                            (ProfID) REFERENCES Professor (ProfID),
+CREATE      TABLE      Class (
+  ClassID    INTEGER     PRIMARY KEY,
+  SemesterID INTEGER,
+  CONSTRAINT fk_class_semester_SemesterID FOREIGN KEY (SemesterID) REFERENCES Semester (SemesterID),
+  Classroom  CHAR(3),
+  Capacity   INTEGER,
   CourseID  CHAR(10),
-  CONSTRAINT   fk_teach_course_CourseID   FOREIGN KEY
-                            (CourseID) REFERENCES Course (CourseID),
-  CONSTRAINT pk_teach PRIMARY KEY (ProfID, CourseID)
+  CONSTRAINT  fk_class_course_CourseID FOREIGN KEY (CourseID) REFERENCES Course (CourseID),
+  ProfID    CHAR(9),
+  CONSTRAINT   fk_class_prof_ProfID   FOREIGN KEY
+                            (ProfID) REFERENCES Professor (ProfID),
 );
-
 
 --?---
 
@@ -130,8 +106,6 @@ CREATE TABLE Test(
     CONSTRAINT fk_test_class_ClassID FOREIGN KEY
                             (ClassID) REFERENCES Class (ClassID)
 );
-
-
 
 
 --- Continues ---
