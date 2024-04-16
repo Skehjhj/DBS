@@ -8,7 +8,8 @@ CREATE      TABLE       UserTable (
   mail      VARCHAR(255),
   name      VARCHAR(255),
   DoB       DATE,
-  sex       VARCHAR(10)
+  sex       VARCHAR(10),
+  password  VARCHAR(10,)
 );
 
 
@@ -43,7 +44,8 @@ CREATE      TABLE       Student (
   StuID    CHAR(9)     PRIMARY KEY,
   CONSTRAINT   fk_stu_user_StuID   FOREIGN KEY
                             (StuID) REFERENCES UserTable (userID),
-  StuStatus     VARCHAR(255),
+  DateJoin     DATE,
+  Program      VARCHAR(255),
   Major        VARCHAR(255),
 );
 
@@ -56,10 +58,15 @@ CREATE TABLE Semester(
 CREATE      TABLE       Course (
   CourseID  CHAR(10)     PRIMARY KEY,
   Name      VARCHAR(255),
-  Howtomark     VARCHAR(255),
   Credit     INTEGER,
   Prerequisites CHAR(10) NULL  REFERENCES Course (CourseID),
-  MinAttendance  INTEGER,
+);
+
+CREATE TABLE MarkColumns(
+  CourseID  CHAR(10),
+  Column INTEGER,
+  PRIMARY KEY (CourseID, Column),
+  Percentage INTEGER,
 );
 
 CREATE      TABLE      Class (
@@ -67,12 +74,22 @@ CREATE      TABLE      Class (
   SemesterID INTEGER,
   CONSTRAINT fk_class_semester_SemesterID FOREIGN KEY (SemesterID) REFERENCES Semester (SemesterID),
   Classroom  CHAR(3),
-  Capacity   INTEGER,
   CourseID  CHAR(10),
   CONSTRAINT  fk_class_course_CourseID FOREIGN KEY (CourseID) REFERENCES Course (CourseID),
   ProfID    CHAR(9),
   CONSTRAINT   fk_class_prof_ProfID   FOREIGN KEY
                             (ProfID) REFERENCES Professor (ProfID),
+  Class_size INTEGER
+);
+
+CREATE TABLE Document(
+  DocID INTEGER PRIMARY KEY,
+  DocName VARCHAR(255),
+  DocType VARCHAR(255),
+  Docpath VARCHAR(255),
+  ClassID    INTEGER,
+  CONSTRAINT fk_document_class_ClassID FOREIGN KEY (ClassID) REFERENCES Class (ClassID),
+  Author VARCHAR(255),
 );
 
 --?---
@@ -97,14 +114,11 @@ CREATE TABLE StuWork(
 CREATE TABLE Test(
     TestID INTEGER PRIMARY KEY,
     CONSTRAINT fk_test_testbank_TestID FOREIGN KEY (TestID) REFERENCES TestBank (TestID),
-    SendStatus BIT,
-    MarkStatus BIT,
-    Deadline DATE,
-    Score INTEGER,
-    CONSTRAINT fk_test_stuwork_Score FOREIGN KEY (Score) REFERENCES StuWork (Score),
     ClassID  INTEGER,
     CONSTRAINT fk_test_class_ClassID FOREIGN KEY
-                            (ClassID) REFERENCES Class (ClassID)
+                            (ClassID) REFERENCES Class (ClassID),
+    Deadline DATE,
+    Test_name VARCHAR(255),
 );
 
 
@@ -113,8 +127,33 @@ CREATE TABLE Test(
 CREATE TABLE Study(
     StuID CHAR(9) REFERENCES Student (StuID),
     ClassID INTEGER REFERENCES Class (ClassID),
-    CONSTRAINT pk_study PRIMARY KEY (StuID, ClassID)
+    CONSTRAINT pk_study PRIMARY KEY (StuID, ClassID),
+    Arg_Score INTEGER,
 );
+
+UPDATE Class
+SET Class_size = (
+  SELECT COUNT(StuID)
+  FROM Study
+  WHERE Study.ClassID = Class.ClassID
+);
+
+CREATE OR REPLACE FUNCTION update_avg_score()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE Study
+    SET Arg_Score = (SELECT AVG(sw.Score)
+                     FROM StuWork sw
+                     WHERE sw.StuID = NEW.StuID AND sw.ClassID = NEW.ClassID)
+    WHERE StuID = NEW.StuID AND ClassID = NEW.ClassID;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_avg_score_trigger
+AFTER INSERT OR UPDATE OR DELETE ON StuWork
+FOR EACH ROW
+EXECUTE FUNCTION update_avg_score();
 
 insert into UserTable (userID, mail, name, DoB, sex) values ('GV01', 'lbaldick0@hcmut.edu.vn', 'Libbie Baldick', '28-08-2003', 'Female');
 insert into UserTable (userID, mail, name, DoB, sex) values ('GV02', 'dhartegan1@hcmut.edu.vn', 'Devy Hartegan', '17-12-2004', 'Male');
