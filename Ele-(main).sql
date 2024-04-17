@@ -9,7 +9,7 @@ CREATE      TABLE       UserTable (
   name      VARCHAR(255),
   DoB       DATE,
   sex       VARCHAR(10),
-  password  VARCHAR(10,)
+  password  VARCHAR(10),
 );
 
 
@@ -64,8 +64,8 @@ CREATE      TABLE       Course (
 
 CREATE TABLE MarkColumns(
   CourseID  CHAR(10),
-  Column INTEGER,
-  PRIMARY KEY (CourseID, Column),
+  MarkName CHAR(50),
+  PRIMARY KEY (CourseID, MarkName),
   Percentage INTEGER,
 );
 
@@ -94,15 +94,29 @@ CREATE TABLE Document(
 
 --?---
 
-CREATE TABLE TestBank(
+CREATE TABLE QuizBank (
   TestID INTEGER PRIMARY KEY,
   Context VARCHAR(255),
-  Answer VARCHAR(255),
+  Answer VARCHAR(255)
 );
 
-CREATE TABLE StuWork(
+CREATE TABLE Test (
+  TestID INTEGER PRIMARY KEY,
+  ClassID INTEGER,
+  Deadline DATETIME,
+  Test_name VARCHAR(255)
+);
+
+CREATE TABLE TestQuestions (
+  TestID INTEGER REFERENCES Test (TestID),
+  QuestionID INTEGER REFERENCES QuizBank (TestID),
+  PRIMARY KEY (TestID, QuestionID)
+);
+
+
+CREATE TABLE StuWork (
   StuID CHAR(9) REFERENCES Student (StuID),
-  TestID INTEGER REFERENCES TestBank (TestID),
+  TestID INTEGER REFERENCES Test (TestID),
   TimesID INTEGER,
   PRIMARY KEY (StuID, TestID, TimesID),
   StuWork VARCHAR(255),
@@ -111,15 +125,6 @@ CREATE TABLE StuWork(
   Score INTEGER
 );
 
-CREATE TABLE Test(
-    TestID INTEGER PRIMARY KEY,
-    CONSTRAINT fk_test_testbank_TestID FOREIGN KEY (TestID) REFERENCES TestBank (TestID),
-    ClassID  INTEGER,
-    CONSTRAINT fk_test_class_ClassID FOREIGN KEY
-                            (ClassID) REFERENCES Class (ClassID),
-    Deadline DATE,
-    Test_name VARCHAR(255),
-);
 
 
 --- Continues ---
@@ -128,32 +133,26 @@ CREATE TABLE Study(
     StuID CHAR(9) REFERENCES Student (StuID),
     ClassID INTEGER REFERENCES Class (ClassID),
     CONSTRAINT pk_study PRIMARY KEY (StuID, ClassID),
-    Arg_Score INTEGER,
+    Avg_Score INTEGER,
 );
 
-UPDATE Class
-SET Class_size = (
-  SELECT COUNT(StuID)
-  FROM Study
-  WHERE Study.ClassID = Class.ClassID
-);
-
-CREATE OR REPLACE FUNCTION update_avg_score()
-RETURNS TRIGGER AS $$
+CREATE TRIGGER UpdateClassSize
+ON Study
+AFTER INSERT, DELETE, UPDATE
+AS
 BEGIN
-    UPDATE Study
-    SET Arg_Score = (SELECT AVG(sw.Score)
-                     FROM StuWork sw
-                     WHERE sw.StuID = NEW.StuID AND sw.ClassID = NEW.ClassID)
-    WHERE StuID = NEW.StuID AND ClassID = NEW.ClassID;
-    RETURN NEW;
+    IF EXISTS (SELECT 1 FROM inserted) OR EXISTS (SELECT 1 FROM deleted)
+    BEGIN
+        UPDATE c
+        SET Class_size = s.StudentsCount
+        FROM Class c
+        INNER JOIN (
+            SELECT ClassID, COUNT(StuID) AS StudentsCount
+            FROM Study
+            GROUP BY ClassID
+        ) s ON c.ClassID = s.ClassID;
+    END
 END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER update_avg_score_trigger
-AFTER INSERT OR UPDATE OR DELETE ON StuWork
-FOR EACH ROW
-EXECUTE FUNCTION update_avg_score();
 
 insert into UserTable (userID, mail, name, DoB, sex) values ('GV01', 'lbaldick0@hcmut.edu.vn', 'Libbie Baldick', '28-08-2003', 'Female');
 insert into UserTable (userID, mail, name, DoB, sex) values ('GV02', 'dhartegan1@hcmut.edu.vn', 'Devy Hartegan', '17-12-2004', 'Male');
@@ -185,6 +184,8 @@ insert into UserTable (userID, mail, name, DoB, sex) values ('SV17', 'dleakeq@hc
 insert into UserTable (userID, mail, name, DoB, sex) values ('SV18', 'croycroftr@hcmut.edu.vn', 'Corbie Roycroft', '28-01-2003', 'Male');
 insert into UserTable (userID, mail, name, DoB, sex) values ('SV19', 'mennalss@hcmut.edu.vn', 'Maurits Ennals', '20-06-2002', 'Male');
 insert into UserTable (userID, mail, name, DoB, sex) values ('SV20', 'sfochst@hcmut.edu.vn', 'Salomo Fochs', '20-12-2003', 'Male');
+UPDATE UserTable
+SET password = userID;
 
 insert into Message (MessageID, Content, SenderID) values (1, 'Cras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque.', 'GV02');
 insert into Message (MessageID, Content, SenderID) values (2, 'Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem.', 'SV13');
@@ -224,26 +225,26 @@ insert into Professor (ProfID, Degree) values ('GV08', 'M.S.');
 insert into Professor (ProfID, Degree) values ('GV09', 'M.S.');
 insert into Professor (ProfID, Degree) values ('GV10', 'M.S.');
 
-insert into Student (StuID, StuStatus, Major) values ('SV01', 'Graduated', 'Biology');
-insert into Student (StuID, StuStatus, Major) values ('SV02', 'On Leave', 'Psychology');
-insert into Student (StuID, StuStatus, Major) values ('SV03', 'Active', 'English Literature');
-insert into Student (StuID, StuStatus, Major) values ('SV04', 'Active', 'Mathematics');
-insert into Student (StuID, StuStatus, Major) values ('SV05', 'Suspended', 'Art History');
-insert into Student (StuID, StuStatus, Major) values ('SV06', 'On Leave', 'English Literature');
-insert into Student (StuID, StuStatus, Major) values ('SV07', 'Active', 'Mathematics');
-insert into Student (StuID, StuStatus, Major) values ('SV08', 'Active', 'Business Administration');
-insert into Student (StuID, StuStatus, Major) values ('SV09', 'Active', 'Biology');
-insert into Student (StuID, StuStatus, Major) values ('SV10', 'Active', 'History');
-insert into Student (StuID, StuStatus, Major) values ('SV11', 'Active', 'Sociology');
-insert into Student (StuID, StuStatus, Major) values ('SV12', 'On Leave', 'English Literature');
-insert into Student (StuID, StuStatus, Major) values ('SV13', 'Active', 'Sociology');
-insert into Student (StuID, StuStatus, Major) values ('SV14', 'On Leave', 'Business Administration');
-insert into Student (StuID, StuStatus, Major) values ('SV15', 'Graduated', 'Mathematics');
-insert into Student (StuID, StuStatus, Major) values ('SV16', 'Suspended', 'English Literature');
-insert into Student (StuID, StuStatus, Major) values ('SV17', 'Active', 'Biology');
-insert into Student (StuID, StuStatus, Major) values ('SV18', 'Active', 'Computer Science');
-insert into Student (StuID, StuStatus, Major) values ('SV19', 'On Leave', 'Mathematics');
-insert into Student (StuID, StuStatus, Major) values ('SV20', 'Active', 'Biology');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV01', '07/03/2023', 'Psychology', 'DT');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV02', '07/08/2021', 'English Literature', 'CLC');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV03', '09/10/2020', 'Psychology', 'DT');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV04', '06/09/2020', 'Business Administration', 'DT');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV05', '02/10/2019', 'Computer Science', 'DT');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV06', '28/06/2019', 'Psychology', 'DT');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV07', '10/10/2021', 'Computer Science', 'DT');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV08', '16/09/2019', 'Engineering', 'CLC');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV09', '10/06/2022', 'Mathematics', 'DT');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV10', '22/07/2020', 'Computer Science', 'VHVL');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV11', '11/09/2022', 'History', 'DT');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV12', '13/02/2022', 'Mathematics', 'DT');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV13', '07/07/2019', 'Engineering', 'VHVL');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV14', '01/04/2021', 'History', 'DT');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV15', '02/07/2020', 'Sociology', 'DT');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV16', '06/01/2021', 'Psychology', 'VHVL');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV17', '07/01/2022', 'Mathematics', 'DT');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV18', '11/04/2021', 'Engineering', 'DT');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV19', '29/07/2019', 'Computer Science', 'DT');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV20', '15/03/2020', 'History', 'CTTT');
 
 insert into Semester (SemesterID, StartDate, EndDate) values (191, '05-09-2019', '31-12-2019');
 insert into Semester (SemesterID, StartDate, EndDate) values (192, '01-01-2020', '21-06-2020');
@@ -258,266 +259,102 @@ insert into Semester (SemesterID, StartDate, EndDate) values (221, '05-09-2022',
 insert into Semester (SemesterID, StartDate, EndDate) values (222, '01-01-2023', '21-06-2023');
 insert into Semester (SemesterID, StartDate, EndDate) values (223, '22-06-2023', '02-09-2023');
 
-INSERT INTO Course (CourseID, Name, Howtomark, Credit, SemesterID, Prerequisites, MinAttendance) VALUES (N'ART606', N'Photography Basics', N'NYSE', 2, 203, null, 35);
-INSERT INTO Course (CourseID, Name, Howtomark, Credit, SemesterID, Prerequisites, MinAttendance) VALUES (N'ENG303', N'Digital Marketing Strategies', N'NASDAQ', 4, 193, null, 64);
-INSERT INTO Course (CourseID, Name, Howtomark, Credit, SemesterID, Prerequisites, MinAttendance) VALUES (N'MAT202', N'Advanced Calculus', N'NASDAQ', 3, 192, null, 33);
-INSERT INTO Course (CourseID, Name, Howtomark, Credit, SemesterID, Prerequisites, MinAttendance) VALUES (N'PHI808', N'Music Theory Fundamentals', N'NYSE', 3, 212, null, 75);
-INSERT INTO Course (CourseID, Name, Howtomark, Credit, SemesterID, Prerequisites, MinAttendance) VALUES (N'BUS707', N'Nutrition and Wellness', N'NASDAQ', 4, 211, N'PHI808', 1);
-INSERT INTO Course (CourseID, Name, Howtomark, Credit, SemesterID, Prerequisites, MinAttendance) VALUES (N'CSE101', N'Introduction to Psychology', N'NASDAQ', 1, 191, N'MAT202', 25);
-INSERT INTO Course (CourseID, Name, Howtomark, Credit, SemesterID, Prerequisites, MinAttendance) VALUES (N'CHE101', N'Business Ethics', N'NASDAQ', 1, 221, N'CSE101', 75);
-INSERT INTO Course (CourseID, Name, Howtomark, Credit, SemesterID, Prerequisites, MinAttendance) VALUES (N'SCI505', N'History of Ancient Civilizations', N'NASDAQ', 1, 202, N'ART606', 15);
-INSERT INTO Course (CourseID, Name, Howtomark, Credit, SemesterID, Prerequisites, MinAttendance) VALUES (N'HIS404', N'Creative Writing Workshop', N'NYSE', 2, 201, N'SCI505', 48);
-INSERT INTO Course (CourseID, Name, Howtomark, Credit, SemesterID, Prerequisites, MinAttendance) VALUES (N'MUS909', N'Introduction to Computer Science', N'NASDAQ', 4, 213, N'CHE101', 56);
+INSERT INTO Course (CourseID, Name, Credit, Prerequisites) VALUES (N'ART606', N'Photography Basics', 2, null);
+INSERT INTO Course (CourseID, Name, Credit, Prerequisites) VALUES (N'ENG303', N'Digital Marketing Strategies', 4, null);
+INSERT INTO Course (CourseID, Name, Credit, Prerequisites) VALUES (N'MAT202', N'Advanced Calculus', 3, null);
+INSERT INTO Course (CourseID, Name, Credit, Prerequisites) VALUES (N'PHI808', N'Music Theory Fundamentals', 3, null);
+INSERT INTO Course (CourseID, Name, Credit, Prerequisites) VALUES (N'BUS707', N'Nutrition and Wellness', 4, N'PHI808');
+INSERT INTO Course (CourseID, Name, Credit, Prerequisites) VALUES (N'CSE101', N'Introduction to Psychology', 1, N'MAT202');
+INSERT INTO Course (CourseID, Name, Credit, Prerequisites) VALUES (N'CHE101', N'Business Ethics', 1, N'CSE101');
+INSERT INTO Course (CourseID, Name, Credit, Prerequisites) VALUES (N'SCI505', N'History of Ancient Civilizations', 1, N'ART606');
+INSERT INTO Course (CourseID, Name, Credit, Prerequisites) VALUES (N'HIS404', N'Creative Writing Workshop', 2, N'SCI505');
+INSERT INTO Course (CourseID, Name, Credit, Prerequisites) VALUES (N'MUS909', N'Introduction to Computer Science', 4, N'CHE101');
 
-insert into Class (ClassID, Classroom, Capacity, CourseID, ProfID) values (1, 'L01', 66, 'MUS909', 'GV04');
-insert into Class (ClassID, Classroom, Capacity, CourseID, ProfID) values (2, 'C02', 44, 'ART606', 'GV02');
-insert into Class (ClassID, Classroom, Capacity, CourseID, ProfID) values (3, 'J03', 45, 'ART606', 'GV06');
-insert into Class (ClassID, Classroom, Capacity, CourseID, ProfID) values (4, 'L04', 88, 'ART606', 'GV05');
-insert into Class (ClassID, Classroom, Capacity, CourseID, ProfID) values (5, 'C05', 92, 'PHI808', 'GV03');
-insert into Class (ClassID, Classroom, Capacity, CourseID, ProfID) values (6, 'J01', 61, 'BUS707', 'GV10');
-insert into Class (ClassID, Classroom, Capacity, CourseID, ProfID) values (7, 'L02', 35, 'SCI505', 'GV04');
-insert into Class (ClassID, Classroom, Capacity, CourseID, ProfID) values (8, 'C03', 26, 'BUS707', 'GV06');
-insert into Class (ClassID, Classroom, Capacity, CourseID, ProfID) values (9, 'J04', 30, 'CSE101', 'GV10');
-insert into Class (ClassID, Classroom, Capacity, CourseID, ProfID) values (10, 'L05', 76, 'BUS707', 'GV02');
-insert into Class (ClassID, Classroom, Capacity, CourseID, ProfID) values (11, 'L03', 49, 'MAT202', 'GV08');
-insert into Class (ClassID, Classroom, Capacity, CourseID, ProfID) values (12, 'C04', 39, 'CHE101', 'GV05');
-insert into Class (ClassID, Classroom, Capacity, CourseID, ProfID) values (13, 'J05', 32, 'MAT202', 'GV02');
-insert into Class (ClassID, Classroom, Capacity, CourseID, ProfID) values (14, 'L01', 65, 'MUS909', 'GV01');
-insert into Class (ClassID, Classroom, Capacity, CourseID, ProfID) values (15, 'C02', 74, 'BUS707', 'GV10');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (1, 223, 'L01', 'PHI808', 'GV10');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (2, 213, 'C02', 'CHE101', 'GV03');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (3, 192, 'J03', 'BUS707', 'GV09');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (4, 211, 'L04', 'SCI505', 'GV03');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (5, 213, 'C05', 'MAT202', 'GV09');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (6, 201, 'J01', 'ENG303', 'GV09');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (7, 211, 'L02', 'ART606', 'GV09');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (8, 193, 'C03', 'SCI505', 'GV10');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (9, 201, 'J04', 'CHE101', 'GV07');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (10, 213, 'L05', 'PHI808', 'GV10');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (11, 191, 'L03', 'CHE101', 'GV06');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (12, 193, 'C04', 'BUS707', 'GV02');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (13, 223, 'J05', 'CSE101', 'GV09');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (14, 212, 'L01', 'MUS909', 'GV01');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (15, 201, 'C02', 'HIS404', 'GV10');
 
-INSERT INTO Teach (ProfID, CourseID)
-SELECT DISTINCT ProfID, CourseID
-FROM Class;
+insert into Document (DocID, DocName, DocType, Docpath, ClassID, Author) values (1, 'Proposal_2021', 'Newsletter', 'https://hud.gov', 11, 'Wenona');
+insert into Document (DocID, DocName, DocType, Docpath, ClassID, Author) values (2, 'Report_Q3', 'Presentation', 'https://illinois.edu', 13, 'Olimpia');
+insert into Document (DocID, DocName, DocType, Docpath, ClassID, Author) values (3, 'Presentation_Final', 'Manual', 'https://taobao.com', 8, 'Kare');
+insert into Document (DocID, DocName, DocType, Docpath, ClassID, Author) values (4, 'Invoice_12345', 'Newsletter', 'http://umich.edu', 15, 'Kelcie');
+insert into Document (DocID, DocName, DocType, Docpath, ClassID, Author) values (5, 'Agreement_Template', 'Report', 'http://w3.org', 5, 'Davidde');
+insert into Document (DocID, DocName, DocType, Docpath, ClassID, Author) values (6, 'Manual_UserGuide', 'Manual', 'https://mozilla.com', 12, 'Yance');
+insert into Document (DocID, DocName, DocType, Docpath, ClassID, Author) values (7, 'Policy_HR', 'Brochure', 'http://163.com', 2, 'Merissa');
+insert into Document (DocID, DocName, DocType, Docpath, ClassID, Author) values (8, 'Survey_Results', 'Manual', 'https://toplist.cz', 9, 'Wittie');
+insert into Document (DocID, DocName, DocType, Docpath, ClassID, Author) values (9, 'Newsletter_March', 'Agreement', 'http://google.co.jp', 6, 'Chariot');
+insert into Document (DocID, DocName, DocType, Docpath, ClassID, Author) values (10, 'Training_Module', 'Report', 'https://spiegel.de', 9, 'Florence');
 
-insert into Test (TestID, SendStatus, MarkStatus, TestType, DoTime, Deadline, Score, ClassID) values (1, 1, 1, 'Essay Exam', '12-02-2024 04:32:29', '24-08-2023', 45, 1);
-insert into Test (TestID, SendStatus, MarkStatus, TestType, DoTime, Deadline, Score, ClassID) values (2, 1, 1, 'Multiple Choice', '12-11-2023 07:38:00', '09-03-2024', 16, 1);
-insert into Test (TestID, SendStatus, MarkStatus, TestType, DoTime, Deadline, Score, ClassID) values (3, 0, 0, 'Essay Exam', '29-08-2023 14:10:42', '24-08-2023', 17, 1);
-insert into Test (TestID, SendStatus, MarkStatus, TestType, DoTime, Deadline, Score, ClassID) values (4, 1, 1, 'Multiple Choice', '30-07-2023 03:32:15', '16-09-2023', 9, 3);
-insert into Test (TestID, SendStatus, MarkStatus, TestType, DoTime, Deadline, Score, ClassID) values (5, 0, 1, 'Essay Exam', '06-10-2023 11:06:14', '16-06-2023', 12, 1);
-insert into Test (TestID, SendStatus, MarkStatus, TestType, DoTime, Deadline, Score, ClassID) values (6, 0, 0, 'Essay Exam', '13-10-2023 13:44:54', '10-05-2023', 70, 2);
-insert into Test (TestID, SendStatus, MarkStatus, TestType, DoTime, Deadline, Score, ClassID) values (7, 1, 1, 'Essay Exam', '24-02-2024 16:59:17', '17-09-2023', 78, 3);
-insert into Test (TestID, SendStatus, MarkStatus, TestType, DoTime, Deadline, Score, ClassID) values (8, 0, 0, 'Multiple Choice', '09-04-2023 03:14:24', '29-04-2023', 58, 1);
-insert into Test (TestID, SendStatus, MarkStatus, TestType, DoTime, Deadline, Score, ClassID) values (9, 0, 1, 'Essay Exam', '27-08-2023 02:06:40', '13-07-2023', 88, 2);
-insert into Test (TestID, SendStatus, MarkStatus, TestType, DoTime, Deadline, Score, ClassID) values (10, 1, 0, 'Multiple Choice', '23-10-2023 00:41:22', '14-10-2023', 96, 2);
-insert into Test (TestID, SendStatus, MarkStatus, TestType, DoTime, Deadline, Score, ClassID) values (11, 0, 1, 'Multiple Choice', '02-03-2024 14:03:55', '04-05-2023', 23, 2);
-insert into Test (TestID, SendStatus, MarkStatus, TestType, DoTime, Deadline, Score, ClassID) values (12, 0, 0, 'Multiple Choice', '18-11-2023 06:37:40', '16-07-2023', 80, 2);
-insert into Test (TestID, SendStatus, MarkStatus, TestType, DoTime, Deadline, Score, ClassID) values (13, 1, 1, 'Multiple Choice', '05-06-2023 01:02:12', '26-02-2024', 86, 3);
-insert into Test (TestID, SendStatus, MarkStatus, TestType, DoTime, Deadline, Score, ClassID) values (14, 1, 0, 'Multiple Choice', '11-11-2023 03:17:56', '05-12-2023', 99, 1);
-insert into Test (TestID, SendStatus, MarkStatus, TestType, DoTime, Deadline, Score, ClassID) values (15, 1, 1, 'Multiple Choice', '30-09-2023 12:22:19', '16-06-2023', 93, 1);
-insert into Test (TestID, SendStatus, MarkStatus, TestType, DoTime, Deadline, Score, ClassID) values (16, 0, 0, 'Essay Exam', '25-04-2023 16:52:04', '15-01-2024', 32, 1);
-insert into Test (TestID, SendStatus, MarkStatus, TestType, DoTime, Deadline, Score, ClassID) values (17, 1, 0, 'Multiple Choice', '28-11-2023 02:06:04', '28-05-2023', 80, 3);
-insert into Test (TestID, SendStatus, MarkStatus, TestType, DoTime, Deadline, Score, ClassID) values (18, 1, 1, 'Essay Exam', '03-09-2023 14:07:06', '23-09-2023', 41, 1);
-insert into Test (TestID, SendStatus, MarkStatus, TestType, DoTime, Deadline, Score, ClassID) values (19, 1, 0, 'Essay Exam', '12-04-2023 20:46:49', '15-03-2024', 92, 2);
-insert into Test (TestID, SendStatus, MarkStatus, TestType, DoTime, Deadline, Score, ClassID) values (20, 1, 1, 'Multiple Choice', '19-06-2023 15:12:31', '28-01-2024', 61, 1);
+insert into QuizBank (TestID, Context, Answer) values (1, 'Duis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit.', 'D');
+insert into QuizBank (TestID, Context, Answer) values (2, 'Duis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit.', 'A');
+insert into QuizBank (TestID, Context, Answer) values (3, 'Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus.', 'B');
+insert into QuizBank (TestID, Context, Answer) values (4, 'Curabitur at ipsum ac tellus semper interdum. Mauris ullamcorper purus sit amet nulla. Quisque arcu libero, rutrum ac, lobortis vel, dapibus at, diam.', 'C');
+insert into QuizBank (TestID, Context, Answer) values (5, 'Duis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit.', 'B');
+insert into QuizBank (TestID, Context, Answer) values (6, 'In congue. Etiam justo. Etiam pretium iaculis justo.', 'A');
+insert into QuizBank (TestID, Context, Answer) values (7, 'In congue. Etiam justo. Etiam pretium iaculis justo.', 'B');
+insert into QuizBank (TestID, Context, Answer) values (8, 'Cras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque.', 'C');
+insert into QuizBank (TestID, Context, Answer) values (9, 'Cras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque.', 'C');
+insert into QuizBank (TestID, Context, Answer) values (10, 'Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros.', 'D');
+insert into QuizBank (TestID, Context, Answer) values (11, 'Phasellus sit amet erat. Nulla tempus. Vivamus in felis eu sapien cursus vestibulum.', 'B');
+insert into QuizBank (TestID, Context, Answer) values (12, 'In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet.', 'D');
+insert into QuizBank (TestID, Context, Answer) values (13, 'Etiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem.', 'D');
+insert into QuizBank (TestID, Context, Answer) values (14, 'In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus.', 'D');
+insert into QuizBank (TestID, Context, Answer) values (15, 'Aenean fermentum. Donec ut mauris eget massa tempor convallis. Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh.', 'A');
+insert into QuizBank (TestID, Context, Answer) values (16, 'Duis consequat dui nec nisi volutpat eleifend. Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus.', 'C');
+insert into QuizBank (TestID, Context, Answer) values (17, 'Nullam porttitor lacus at turpis. Donec posuere metus vitae ipsum. Aliquam non mauris.', 'D');
+insert into QuizBank (TestID, Context, Answer) values (18, 'Maecenas ut massa quis augue luctus tincidunt. Nulla mollis molestie lorem. Quisque ut erat.', 'A');
+insert into QuizBank (TestID, Context, Answer) values (19, 'Duis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit.', 'D');
+insert into QuizBank (TestID, Context, Answer) values (20, 'Proin interdum mauris non ligula pellentesque ultrices. Phasellus id sapien in sapien iaculis congue. Vivamus metus arcu, adipiscing molestie.', 'D');
+insert into QuizBank (TestID, Context, Answer) values (21, 'Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis.', 'C');
+insert into QuizBank (TestID, Context, Answer) values (22, 'Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat.', 'D');
+insert into QuizBank (TestID, Context, Answer) values (23, 'Sed ante. Vivamus tortor. Duis mattis egestas metus.', 'C');
+insert into QuizBank (TestID, Context, Answer) values (24, 'Cras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque.', 'A');
+insert into QuizBank (TestID, Context, Answer) values (25, 'Fusce consequat. Nulla nisl. Nunc nisl.', 'B');
+insert into QuizBank (TestID, Context, Answer) values (26, 'Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem.', 'B');
+insert into QuizBank (TestID, Context, Answer) values (27, 'Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem.', 'A');
+insert into QuizBank (TestID, Context, Answer) values (28, 'Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum.', 'D');
+insert into QuizBank (TestID, Context, Answer) values (29, 'Nulla ut erat id mauris vulputate elementum. Nullam varius. Nulla facilisi.', 'C');
+insert into QuizBank (TestID, Context, Answer) values (30, 'Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc.', 'D');
 
-insert into QuizBank (QuizID, Context, Answer) values (1, 'In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (2, 'Etiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (3, 'Fusce consequat. Nulla nisl. Nunc nisl.', 'D');
-insert into QuizBank (QuizID, Context, Answer) values (4, 'Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam. Suspendisse potenti.', 'D');
-insert into QuizBank (QuizID, Context, Answer) values (5, 'In congue. Etiam justo. Etiam pretium iaculis justo.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (6, 'Fusce consequat. Nulla nisl. Nunc nisl.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (7, 'Duis bibendum. Morbi non quam nec dui luctus rutrum. Nulla tellus.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (8, 'Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem.', 'D');
-insert into QuizBank (QuizID, Context, Answer) values (9, 'Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo. Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (10, 'Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (11, 'Sed ante. Vivamus tortor. Duis mattis egestas metus.', 'D');
-insert into QuizBank (QuizID, Context, Answer) values (12, 'Proin eu mi. Nulla ac enim. In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (13, 'In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (14, 'Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue. Aliquam erat volutpat.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (15, 'Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (16, 'Duis consequat dui nec nisi volutpat eleifend. Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (17, 'Aenean lectus. Pellentesque eget nunc. Donec quis orci eget orci vehicula condimentum.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (18, 'In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (19, 'Aenean lectus. Pellentesque eget nunc. Donec quis orci eget orci vehicula condimentum.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (20, 'Sed ante. Vivamus tortor. Duis mattis egestas metus.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (21, 'Duis consequat dui nec nisi volutpat eleifend. Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (22, 'In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (23, 'In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (24, 'Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem.', 'D');
-insert into QuizBank (QuizID, Context, Answer) values (25, 'Sed ante. Vivamus tortor. Duis mattis egestas metus.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (26, 'Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (27, 'Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (28, 'Integer ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (29, 'Nulla ut erat id mauris vulputate elementum. Nullam varius. Nulla facilisi.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (30, 'Duis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (31, 'Etiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (32, 'Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (33, 'In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (34, 'Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (35, 'In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (36, 'Fusce consequat. Nulla nisl. Nunc nisl.', 'D');
-insert into QuizBank (QuizID, Context, Answer) values (37, 'Maecenas ut massa quis augue luctus tincidunt. Nulla mollis molestie lorem. Quisque ut erat.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (38, 'Aenean fermentum. Donec ut mauris eget massa tempor convallis. Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (39, 'Nam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus.', 'D');
-insert into QuizBank (QuizID, Context, Answer) values (40, 'Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam. Suspendisse potenti.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (41, 'Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio.', 'D');
-insert into QuizBank (QuizID, Context, Answer) values (42, 'Vestibulum quam sapien, varius ut, blandit non, interdum in, ante. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis faucibus accumsan odio. Curabitur convallis.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (43, 'Curabitur in libero ut massa volutpat convallis. Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (44, 'Phasellus in felis. Donec semper sapien a libero. Nam dui.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (45, 'Pellentesque at nulla. Suspendisse potenti. Cras in purus eu magna vulputate luctus.', 'D');
-insert into QuizBank (QuizID, Context, Answer) values (46, 'Aenean fermentum. Donec ut mauris eget massa tempor convallis. Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (47, 'Sed ante. Vivamus tortor. Duis mattis egestas metus.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (48, 'Fusce posuere felis sed lacus. Morbi sem mauris, laoreet ut, rhoncus aliquet, pulvinar sed, nisl. Nunc rhoncus dui vel sem.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (49, 'Phasellus sit amet erat. Nulla tempus. Vivamus in felis eu sapien cursus vestibulum.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (50, 'Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (51, 'Phasellus in felis. Donec semper sapien a libero. Nam dui.', 'D');
-insert into QuizBank (QuizID, Context, Answer) values (52, 'Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (53, 'Phasellus sit amet erat. Nulla tempus. Vivamus in felis eu sapien cursus vestibulum.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (54, 'Praesent blandit. Nam nulla. Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede.', 'D');
-insert into QuizBank (QuizID, Context, Answer) values (55, 'Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh.', 'D');
-insert into QuizBank (QuizID, Context, Answer) values (56, 'Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (57, 'Aenean lectus. Pellentesque eget nunc. Donec quis orci eget orci vehicula condimentum.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (58, 'Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (59, 'Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (60, 'Phasellus sit amet erat. Nulla tempus. Vivamus in felis eu sapien cursus vestibulum.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (61, 'Nullam porttitor lacus at turpis. Donec posuere metus vitae ipsum. Aliquam non mauris.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (62, 'Duis consequat dui nec nisi volutpat eleifend. Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (63, 'Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (64, 'Aenean fermentum. Donec ut mauris eget massa tempor convallis. Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh.', 'D');
-insert into QuizBank (QuizID, Context, Answer) values (65, 'In hac habitasse platea dictumst. Etiam faucibus cursus urna. Ut tellus.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (66, 'Proin leo odio, porttitor id, consequat in, consequat ut, nulla. Sed accumsan felis. Ut at dolor quis odio consequat varius.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (67, 'Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (68, 'Nullam porttitor lacus at turpis. Donec posuere metus vitae ipsum. Aliquam non mauris.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (69, 'Donec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue.', 'D');
-insert into QuizBank (QuizID, Context, Answer) values (70, 'Phasellus in felis. Donec semper sapien a libero. Nam dui.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (71, 'Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (72, 'Aenean lectus. Pellentesque eget nunc. Donec quis orci eget orci vehicula condimentum.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (73, 'In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (74, 'Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (75, 'Fusce consequat. Nulla nisl. Nunc nisl.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (76, 'Cras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque.', 'D');
-insert into QuizBank (QuizID, Context, Answer) values (77, 'In hac habitasse platea dictumst. Etiam faucibus cursus urna. Ut tellus.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (78, 'Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (79, 'Nullam porttitor lacus at turpis. Donec posuere metus vitae ipsum. Aliquam non mauris.', 'D');
-insert into QuizBank (QuizID, Context, Answer) values (80, 'Curabitur at ipsum ac tellus semper interdum. Mauris ullamcorper purus sit amet nulla. Quisque arcu libero, rutrum ac, lobortis vel, dapibus at, diam.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (81, 'Phasellus sit amet erat. Nulla tempus. Vivamus in felis eu sapien cursus vestibulum.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (82, 'Curabitur in libero ut massa volutpat convallis. Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (83, 'In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (84, 'Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (85, 'In congue. Etiam justo. Etiam pretium iaculis justo.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (86, 'Nulla ut erat id mauris vulputate elementum. Nullam varius. Nulla facilisi.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (87, 'Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (88, 'Integer ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (89, 'Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (90, 'Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (91, 'Proin interdum mauris non ligula pellentesque ultrices. Phasellus id sapien in sapien iaculis congue. Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (92, 'Maecenas ut massa quis augue luctus tincidunt. Nulla mollis molestie lorem. Quisque ut erat.', 'C');
-insert into QuizBank (QuizID, Context, Answer) values (93, 'Duis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit.', 'D');
-insert into QuizBank (QuizID, Context, Answer) values (94, 'Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam. Suspendisse potenti.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (95, 'Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam. Suspendisse potenti.', 'D');
-insert into QuizBank (QuizID, Context, Answer) values (96, 'Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (97, 'In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus.', 'A');
-insert into QuizBank (QuizID, Context, Answer) values (98, 'Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.', 'B');
-insert into QuizBank (QuizID, Context, Answer) values (99, 'Quisque porta volutpat erat. Quisque erat eros, viverra eget, congue eget, semper rutrum, nulla. Nunc purus.', 'D');
-insert into QuizBank (QuizID, Context, Answer) values (100, 'Duis consequat dui nec nisi volutpat eleifend. Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus.', 'B');
+insert into Test (TestID, ClassID, Deadline, Test_name) values (1, 2, '18/02/2024', 'Test4');
+insert into Test (TestID, ClassID, Deadline, Test_name) values (2, 9, '10/01/2024', 'Test1');
+insert into Test (TestID, ClassID, Deadline, Test_name) values (3, 8, '06/07/2023', 'Test2');
+insert into Test (TestID, ClassID, Deadline, Test_name) values (4, 8, '24/10/2023', 'Test5');
+insert into Test (TestID, ClassID, Deadline, Test_name) values (5, 2, '04/06/2023', 'Test3');
 
-insert into Quiz (TestID, QuizID) values (7, 65);
-insert into Quiz (TestID, QuizID) values (6, 31);
-insert into Quiz (TestID, QuizID) values (1, 54);
-insert into Quiz (TestID, QuizID) values (14, 48);
-insert into Quiz (TestID, QuizID) values (18, 41);
-insert into Quiz (TestID, QuizID) values (3, 62);
-insert into Quiz (TestID, QuizID) values (9, 97);
-insert into Quiz (TestID, QuizID) values (10, 98);
-insert into Quiz (TestID, QuizID) values (15, 58);
-insert into Quiz (TestID, QuizID) values (18, 62);
-insert into Quiz (TestID, QuizID) values (6, 66);
-insert into Quiz (TestID, QuizID) values (9, 40);
-insert into Quiz (TestID, QuizID) values (8, 53);
-insert into Quiz (TestID, QuizID) values (1, 66);
-insert into Quiz (TestID, QuizID) values (5, 67);
-insert into Quiz (TestID, QuizID) values (11, 79);
-insert into Quiz (TestID, QuizID) values (9, 31);
-insert into Quiz (TestID, QuizID) values (1, 65);
-insert into Quiz (TestID, QuizID) values (8, 31);
-insert into Quiz (TestID, QuizID) values (20, 45);
-insert into Quiz (TestID, QuizID) values (14, 38);
-insert into Quiz (TestID, QuizID) values (10, 35);
-insert into Quiz (TestID, QuizID) values (10, 25);
-insert into Quiz (TestID, QuizID) values (7, 54);
-insert into Quiz (TestID, QuizID) values (4, 32);
-insert into Quiz (TestID, QuizID) values (6, 46);
-insert into Quiz (TestID, QuizID) values (6, 45);
-insert into Quiz (TestID, QuizID) values (8, 13);
-insert into Quiz (TestID, QuizID) values (17, 83);
-insert into Quiz (TestID, QuizID) values (6, 32);
-insert into Quiz (TestID, QuizID) values (7, 98);
-insert into Quiz (TestID, QuizID) values (13, 71);
-insert into Quiz (TestID, QuizID) values (17, 95);
-insert into Quiz (TestID, QuizID) values (15, 43);
-insert into Quiz (TestID, QuizID) values (9, 85);
-insert into Quiz (TestID, QuizID) values (1, 93);
-insert into Quiz (TestID, QuizID) values (6, 61);
-insert into Quiz (TestID, QuizID) values (9, 89);
-insert into Quiz (TestID, QuizID) values (7, 34);
-insert into Quiz (TestID, QuizID) values (13, 20);
-insert into Quiz (TestID, QuizID) values (18, 31);
-insert into Quiz (TestID, QuizID) values (17, 45);
-insert into Quiz (TestID, QuizID) values (13, 56);
-insert into Quiz (TestID, QuizID) values (11, 18);
-insert into Quiz (TestID, QuizID) values (20, 43);
-insert into Quiz (TestID, QuizID) values (9, 86);
-insert into Quiz (TestID, QuizID) values (2, 87);
-insert into Quiz (TestID, QuizID) values (19, 20);
-insert into Quiz (TestID, QuizID) values (3, 69);
-insert into Quiz (TestID, QuizID) values (17, 85);
-insert into Quiz (TestID, QuizID) values (18, 73);
-insert into Quiz (TestID, QuizID) values (5, 42);
-insert into Quiz (TestID, QuizID) values (5, 55);
-insert into Quiz (TestID, QuizID) values (5, 89);
-insert into Quiz (TestID, QuizID) values (18, 71);
-insert into Quiz (TestID, QuizID) values (15, 89);
-insert into Quiz (TestID, QuizID) values (18, 43);
-insert into Quiz (TestID, QuizID) values (19, 46);
-insert into Quiz (TestID, QuizID) values (3, 33);
-insert into Quiz (TestID, QuizID) values (16, 11);
-insert into Quiz (TestID, QuizID) values (20, 26);
-insert into Quiz (TestID, QuizID) values (1, 43);
-insert into Quiz (TestID, QuizID) values (2, 76);
-insert into Quiz (TestID, QuizID) values (10, 30);
-insert into Quiz (TestID, QuizID) values (1, 55);
-insert into Quiz (TestID, QuizID) values (8, 83);
-insert into Quiz (TestID, QuizID) values (2, 35);
-insert into Quiz (TestID, QuizID) values (14, 66);
-insert into Quiz (TestID, QuizID) values (17, 71);
-insert into Quiz (TestID, QuizID) values (17, 89);
-insert into Quiz (TestID, QuizID) values (9, 43);
-insert into Quiz (TestID, QuizID) values (13, 18);
-insert into Quiz (TestID, QuizID) values (3, 63);
-insert into Quiz (TestID, QuizID) values (13, 67);
-insert into Quiz (TestID, QuizID) values (11, 17);
-insert into Quiz (TestID, QuizID) values (14, 57);
-insert into Quiz (TestID, QuizID) values (6, 65);
-insert into Quiz (TestID, QuizID) values (18, 93);
-insert into Quiz (TestID, QuizID) values (17, 79);
-insert into Quiz (TestID, QuizID) values (7, 43);
-insert into Quiz (TestID, QuizID) values (8, 25);
-insert into Quiz (TestID, QuizID) values (1, 96);
-insert into Quiz (TestID, QuizID) values (1, 37);
-insert into Quiz (TestID, QuizID) values (18, 59);
-insert into Quiz (TestID, QuizID) values (1, 31);
-insert into Quiz (TestID, QuizID) values (3, 64);
-insert into Quiz (TestID, QuizID) values (14, 12);
-insert into Quiz (TestID, QuizID) values (8, 49);
-insert into Quiz (TestID, QuizID) values (7, 30);
-insert into Quiz (TestID, QuizID) values (8, 45);
-insert into Quiz (TestID, QuizID) values (2, 79);
-insert into Quiz (TestID, QuizID) values (7, 41);
-insert into Quiz (TestID, QuizID) values (4, 14);
-insert into Quiz (TestID, QuizID) values (19, 77);
-insert into Quiz (TestID, QuizID) values (5, 25);
-insert into Quiz (TestID, QuizID) values (15, 78);
+INSERT Into TestQuestions(TestID, QuestionID) VALUES (1, 1);
+INSERT Into TestQuestions(TestID, QuestionID) VALUES (1, 2);
+INSERT Into TestQuestions(TestID, QuestionID) VALUES (1, 3);
+INSERT Into TestQuestions(TestID, QuestionID) VALUES (1, 4);
+INSERT Into TestQuestions(TestID, QuestionID) VALUES (1, 5);
 
-insert into StuWork (StuID, TestID, TimesID, StuWork, DoneTime, Score) values ('SV05', 16, 1, 'Etiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem.', '14-02-2024', 78);
-insert into StuWork (StuID, TestID, TimesID, StuWork, DoneTime, Score) values ('SV08', 10, 2, 'Sed ante. Vivamus tortor. Duis mattis egestas metus.', '28-04-2023', 5);
-insert into StuWork (StuID, TestID, TimesID, StuWork, DoneTime, Score) values ('SV04', 13, 3, 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Proin risus. Praesent lectus.', '04-11-2023', 22);
-insert into StuWork (StuID, TestID, TimesID, StuWork, DoneTime, Score) values ('SV11', 15, 1, 'Proin interdum mauris non ligula pellentesque ultrices. Phasellus id sapien in sapien iaculis congue. Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl.', '03-08-2023', 32);
-insert into StuWork (StuID, TestID, TimesID, StuWork, DoneTime, Score) values ('SV13', 14, 2, 'Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus.', '17-04-2023', 8);
-insert into StuWork (StuID, TestID, TimesID, StuWork, DoneTime, Score) values ('SV12', 17, 1, 'Etiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem.', '22-06-2023', 33);
-insert into StuWork (StuID, TestID, TimesID, StuWork, DoneTime, Score) values ('SV09', 20, 3, 'Fusce consequat. Nulla nisl. Nunc nisl.', '07-12-2023', 45);
-insert into StuWork (StuID, TestID, TimesID, StuWork, DoneTime, Score) values ('SV17', 3, 1, 'Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus.', '21-10-2023', 60);
-insert into StuWork (StuID, TestID, TimesID, StuWork, DoneTime, Score) values ('SV18', 4, 5, 'Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros.', '09-06-2023', 72);
-insert into StuWork (StuID, TestID, TimesID, StuWork, DoneTime, Score) values ('SV08', 14, 2, 'Morbi non lectus. Aliquam sit amet diam in magna bibendum imperdiet. Nullam orci pede, venenatis non, sodales sed, tincidunt eu, felis.', '08-06-2023', 23);
+INSERT Into TestQuestions(TestID, QuestionID) VALUES (2, 6);
+INSERT Into TestQuestions(TestID, QuestionID) VALUES (2, 7);
+INSERT Into TestQuestions(TestID, QuestionID) VALUES (2, 1);
+INSERT Into TestQuestions(TestID, QuestionID) VALUES (2, 2);
+INSERT Into TestQuestions(TestID, QuestionID) VALUES (2, 3);
+
+insert into StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) values ('SV05', 1, 1, '1C2C3C4C5C', '14-02-2024', '14-02-2024', 78);
+insert into StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) values ('SV08', 2, 1, '1C2C3C4C5C', '28-04-2023', '28-04-2023', 5);
+insert into StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) values ('SV04', 3, 1, '1C2C3C4C5C', '03-08-2023', '03-08-2023', 32);
+insert into StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) values ('SV13', 4, 1, '1C2C3C4C5C', '17-04-2023', '17-04-2023', 8);
+insert into StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) values ('SV12', 1, 1, '1C2C3C4C5C', '22-06-2023', '22-06-2023', 33);
+insert into StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) values ('SV09', 2, 1, '1C2C3C4C5C', '07-12-2023', '07-12-2023', 45);
+insert into StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) values ('SV17', 3, 1, '1C2C3C4C5C', '21-10-2023', '21-10-2023', 60);
+insert into StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) values ('SV18', 4, 1, '1C2C3C4C5C', '09-06-2023', '09-06-2023', 72);
+insert into StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) values ('SV08', 2, 2, '1C2C3C4C5C', '08-06-2023', '08-06-2023', 23);
 
 insert into Study (StuID, ClassID) values ('SV17', 15);
 insert into Study (StuID, ClassID) values ('SV09', 15);
