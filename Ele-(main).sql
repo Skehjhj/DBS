@@ -16,6 +16,7 @@ CREATE      TABLE       UserTable (
 ALTER TABLE UserTable
 ADD CONSTRAINT CK_Sex
 CHECK (sex IN ('Male', 'Female'));
+ADD CHECK (mail LIKE '%@hcmut.edu.vn');
 
 
 CREATE TABLE Message(
@@ -154,6 +155,8 @@ BEGIN
         ) s ON c.ClassID = s.ClassID;
     END
 END;
+
+-- mình chỉ tính điểm dựa trên test cao điểm nhất th --
 
 CREATE TABLE HighestScores AS
 SELECT
