@@ -1,0 +1,16 @@
+#myInput{
+    max-width: 100%;
+    border-radius: 15px;
+    border: none; /* Loại bỏ viền */
+    padding: 10px; /* Thêm khoảng cách giữa chữ và viền */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3); /* Làm mờ viền */
+}
+#btn_notification, #upRe, #them_btn, .btn btn-danger, #themtl_btn{
+    background-color: #4CAF50; /* Màu nền */
+    color: white; /* Màu chữ */
+    padding: 10px 20px; /* Kích thước */
+    border: none; /* Loại bỏ viền */
+    border-radius: 15px; /* Bo tròn viền */
+    cursor: pointer; /* Con trỏ chuột */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3); /* Làm mờ viền */
+}

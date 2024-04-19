@@ -1,0 +1,98 @@
+/* dialog giao diện*/
+.dialog-body{
+    position: relative;
+}
+.dialog{
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 10;
+    align-items: center;
+    justify-content: center; 
+    visibility: hidden;
+    opacity: 0;
+    transition:  opacity linear 0.5s;
+}
+.overplay{
+    background-color:#b0a8a875;
+   
+}
+.dialog:target{
+    visibility: visible;
+    opacity: 1;
+}
+.dialog-body{
+    position: relative;
+    background-color: #fff;
+    max-width: 500px;
+    top: 200px;
+    left: 500px;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);}
+
+.dialog-close-btn{
+    position: absolute;
+    top: 2px;
+    right: 6px;
+    text-decoration: none;
+    color: #333;
+}
+.dialog-btn{
+    position: relative; 
+    top: 50px;
+    left: 1250px;
+    color: #fff;
+    border-radius: 10px;
+    background-color: #21c2d4;
+    width: 200px;
+    height: 100px;
+    margin: 20px 20px;
+    text-align: center;
+    padding: 10px;
+    text-decoration: none;
+    /* z-index: 6; */
+    
+}
+.dialog-btn:hover{   
+     box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+
+.overplay-close{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+}
+#dialog-input{
+    margin-top: 10px;
+    position: relative;
+    background-color: #a19e9e;
+    width: 450px;
+    height: 30px;
+    border-radius: 10px;
+    color: #fff;
+    padding: 10px;
+}
+#dialog-submit{
+    position: relative;
+    background-color: #21c2d4;
+    width: 100px;
+    height: 40px;
+    border-radius: 10px;
+    color: #fff;
+    padding: 10px;
+    margin-top: 10px;
+    margin-left: 170px;
+}
+
+#hero {
+    width: 100%;
+    height: 80vh;
+    background: url("https://firebasestorage.googleapis.com/v0/b/fir-d023a.appspot.com/o/Img%2FHome%2FHomeGV%2FHOMEGV.jpg?alt=media&token=220e16d6-5d39-4b87-abfd-7d8be610eca9") top center;
+    background-size: cover;
+    position: relative;
+}

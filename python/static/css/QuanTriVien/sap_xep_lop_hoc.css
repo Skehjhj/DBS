@@ -1,0 +1,373 @@
+*{
+    padding:0;
+    margin:0;
+    text-decoration: none;
+    font-family: 'Poppins', sans-serif;   
+
+}
+#MainForm{
+    margin-top: 50px;
+}
+/*style trong login */
+
+body {
+    display: flex;
+    justify-content: center; /* Căn giữa theo chiều ngang */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    height: 100vh; /* Chiều cao của toàn bộ trang */
+    background-color: #E8F1F2   ; /* Màu nền của toàn bộ trang */
+    margin: 10vh 0px 0px 10vh; /* Loại bỏ margin mặc định */
+    padding: 0; /* Loại bỏ padding mặc định */
+    background-image: 
+    url("https://firebasestorage.googleapis.com/v0/b/fir-d023a.appspot.com/o/Img%2FHome%2FDH_DEF.jpg?alt=media&token=ffbe0c5c-bb5c-40b0-a073-898dba82fb71");
+    background-size: cover;
+}
+
+.main1 {
+    position: relative;
+    bottom: 10px;
+    padding: 50px;
+    width: 900px;
+    height: 700px;
+    background-color: #031c458f;
+    border-radius: 50px; /* Điều chỉnh giá trị này để thay đổi độ cong của góc */
+    margin: 20px;
+    justify-content: center;
+    align-items: center;
+}
+.Dang-nhap {
+    text-align: center;
+    margin: 20px;
+    font-size: 38px;
+    color: #FFFF; /* Màu chữ */
+    font-weight: bold; /* Chữ in đậm */
+    font-family: 'Noto Serif', serif;
+}
+.title{
+    margin: 20px;
+    font-size: 25px;
+    color: #FFFF; /* Màu chữ */
+    font-weight: bold; /* Chữ in đậm */
+    font-family: 'Noto Serif', serif;
+}
+.input-box{
+    width: 350px;
+    margin-top: 20px;
+    margin-left: 10px;
+    text-align: left;
+    font-size: 18px;
+    color: #FFFF; /* Màu chữ */
+    font-weight: bold; /* Chữ in đậm */
+}
+
+.select-box{
+    height: 40px;
+    margin-left: 5px;
+    padding: 10px;
+    border: none;
+    background-color: #D9D9D9;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+
+.rounded-rectangle-login input[type="text"] {
+    /* width: 850px; */
+    height: 20px;
+    margin-left: 5px;
+    padding: 10px; /* Khoảng cách bên trong input */ 
+    border: none; /* Loại bỏ viền */
+    background-color: #D9D9D9;
+    border-radius: 20px; /* Điều chỉnh giá trị này để thay đổi độ cong của góc */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* thanh điều khiển*/
+nav{
+    border: #00173D;
+    border-radius: 40px;
+    position: relative;
+    top: 10px;
+    right: 180px;
+    width: 90px;
+    height: 800px;
+    margin-top: 10px;
+    background: #00173D;
+    overflow: hidden;
+    transition: 1s;
+}
+/* animation cho thanh điều khiển*/
+nav:hover{
+    position: relative;
+    top: 10px;
+    right: 70px;
+    width: 300px;
+}
+
+/* Chỉnh logo và avatar*/
+.logo{
+    text-align: center;
+    display: flex;
+    margin: 0px 0px 0px 0px;
+    padding-bottom: 2rem;
+}
+.logo img{
+    height: 45px;
+    width: 60px;
+    border-radius: 50%;
+}
+.logo span{
+    font-weight: bold;
+    padding-left: 15px;
+    font-size: 18px;
+    margin-top: 10px;
+    text-transform: uppercase;
+}
+nav ul li a{
+    position: relative;
+    width: 280px;
+    font-size: 14px;
+    color: #C2E8F8;
+    display: table;
+    padding:10px
+}
+.avatar
+{
+    text-align: center;
+    display: flex;
+    margin: 0px 0px 0px 0px;
+    padding-bottom: 1rem;
+}
+.avatar img{
+    margin-left: 8px;
+    height:50px;
+    width: 50px;
+    border-radius: 50%;
+}
+.avatar span{
+    font-weight: bold;
+    font-size: 14px;
+    margin-top: 10px;
+    text-transform: uppercase;
+    padding-left: 15px;
+}
+
+/* Chỉnh vị trí icon của thanh điều khiển*/
+nav .fas{
+    position: relative;
+    width: 70px;
+    height: 40px;
+    top: 12px;
+    font-size: 20px;
+    text-align: center;
+}
+/* Chỉnh vị trí chữ của thanh điều khiển*/
+.nav-item{ 
+    position: relative;
+    top: 12px;
+    margin-left: 16px;
+}
+/*hiệu ứng thanh diều khiển*/
+.side-bar-icon{
+    width: 360px;
+}
+.side-bar-icon:hover{
+    background: #C2E8F8;
+}
+.side-bar-icon:hover i{
+    color: #00173D;
+    transition: 0.5s;
+}
+.side-bar-icon:hover .nav-item{
+    color: #00173D;
+    transition: 0.5s;
+}
+
+/* templates sap_xep_mon_hoc */
+#div1{
+    position: relative;
+    top: 50px;
+    height: 150px;
+    left: 20px;
+}
+#div2{
+    position: relative;
+    top: 50px;
+    left: 20px;
+}
+#dot_dki{
+    width: 200px;
+}
+#button1{
+    position: relative;
+    top: 10px;
+    left: 70px;
+}
+#updkiBtn{
+    width: 100px;
+    height: 40px;
+    border-radius: 10px;
+    background-color: #00173D;
+    color: aliceblue;
+    font-size: large;
+    font-family: 'Times New Roman', Times, serif;
+}
+#closeBtn{
+    width: 130px;
+    height: 40px;
+    border-radius: 10px;
+    background-color: #00173D;
+    color: aliceblue;
+    font-size: large;
+    font-family: 'Times New Roman', Times, serif;
+}
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+#maMH{
+    position: relative;
+    left: 320px;
+    bottom: 121px;
+}
+#idInp{
+    width:150px;
+}
+
+#findBtn{
+    width: 180px;
+    height: 40px;
+    border-radius: 10px;
+    background-color: #00173D;
+    color: aliceblue;
+    font-size: large;
+    font-family: 'Times New Roman', Times, serif;
+    position: relative;
+    left: 465px;
+    bottom: 111px;
+}
+#sisi{
+    position: relative;
+    left: 600px;
+    bottom: 241px;
+}
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+#numofclassInp{
+    width: 350px;
+}
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+#eachsiso{
+    position: relative;
+    left: 430px;
+    bottom: 120px;
+}
+#sisoInp{
+    width: 350px;
+
+}
+#numClass{
+    position: relative;
+    bottom: 37px;
+}
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+#note{
+    position: relative;
+    bottom: 20px;
+    left: 10px;
+    width: 900px;
+    font-size: 20px;
+    color: #c5a944; /* Màu chữ */
+    font-style: italic; /* Chữ in nghiêng */
+    /* font-weight: bold; Chữ in đậm */
+    font-family: 'Noto Serif', serif;
+}
+#note1{
+    position: relative;
+    bottom: 100px;
+    left: 10px;
+    width: 900px;
+    font-size: 20px;
+    color: #c5a944; /* Màu chữ */
+    font-style: italic; /* Chữ in nghiêng */
+    /* font-weight: bold; Chữ in đậm */
+    font-family: 'Noto Serif', serif;
+}
+#note2{
+    position: relative;
+    bottom: 50px;
+    left: 10px;
+    width: 900px;
+    font-size: 20px;
+    color: #c5a944; /* Màu chữ */
+    font-style: italic; /* Chữ in nghiêng */
+    /* font-weight: bold; Chữ in đậm */
+    font-family: 'Noto Serif', serif;
+}
+#dki{
+    position: relative;
+    width: 700px;
+    bottom: 120px;
+}
+#dki1{
+    position: relative;
+    width: 700px;
+    bottom: 60px;
+}
+#dkigvInp{
+    width: 790px;
+}
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+#AddBtn{
+    width: 300px;
+    height: 40px;
+    border-radius: 10px;
+    background-color: #00173D;
+    color: aliceblue;
+    font-size: large;
+    font-family: 'Times New Roman', Times, serif;
+    position: relative;
+    left: 20px;
+    bottom: 110px;
+}
+
+#UpdBtn{
+    width: 300px;
+    height: 40px;
+    border-radius: 10px;
+    background-color: #00173D;
+    color: aliceblue;
+    font-size: large;
+    font-family: 'Times New Roman', Times, serif;
+    position: relative;
+    left: 210px;
+}
+
+#Sche{
+    top: 5px;
+    width: 300px;
+    height: 40px;
+    border-radius: 10px;
+    background-color: #00173D;
+    color: aliceblue;
+    font-size: large;
+    font-family: 'Times New Roman', Times, serif;
+    position: relative;
+    left: 270px;
+}
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+#dot_dki, #idInp, #min_numofsvInp, #numofclassInp, #sisoInp, #dkigvInp{
+    background-color: #cdd3aa;
+}
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+#updkiBtn:hover, #closeBtn:hover, #findBtn:hover{
+    background-color: #054b36;
+    color: aliceblue;
+    cursor: pointer;
+}

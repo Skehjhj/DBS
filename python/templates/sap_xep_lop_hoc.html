@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sắp xếp lớp học</title>
+
+    <link rel="stylesheet" href="/static/css/QuanTriVien/sap_xep_lop_hoc.css">
+    <script src="https://kit.fontawesome.com/2c32e62c1f.js" crossorigin="anonymous"></script>
+    <!-- <script src="./js/QuanTriVien/angular.min.js"></script>
+    <script src="./js/QuanTriVien/angular-route.min.js"></script>
+    <script src="./js/QuanTriVien/app.js"></script> -->
+    <!-- Favicons -->
+    <link rel="shortcut icon" type="image/png" href="/static/assets/img/D.png"/>
+</head>
+
+<body ng-app="myapp" ng-controller="homeCtrl">
+    <!-- Vị trí thanh nav, copy từ file HomeQTV.html qua
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        -->
+        <nav>
+            <ul>
+                <li><a href="#" class="logo">
+                        <img
+                            src="https://firebasestorage.googleapis.com/v0/b/fir-d023a.appspot.com/o/Img%2FHome%2F01_logobachkhoasang.png?alt=media&token=6e835bd4-9c3f-4b16-8c4d-36f87c7e7c9d">
+
+                        <span class="nav-item">bkel</span>
+                    </a></li>
+                <li><a href="HomeQTV.html" class="side-bar-icon">
+                        <i class="fas fa-home"></i>
+                        <span class="nav-item">Trang chủ</span>
+                    </a></li>
+                <li><a href="registerADMIN.html" class="side-bar-icon">
+                        <i class="fas fa-newspaper"></i>
+                        <span class="nav-item">Đăng ký quản trị viên</span>
+                    </a></li>
+                <li><a href="monhoc.html" class="side-bar-icon">
+                        <i class="fas fa-newspaper"></i>
+                        <span class="nav-item">Chỉnh sửa học kì và môn học</span>
+                    </a></li>
+                <li><a href="modifySV.html" class="side-bar-icon">
+                        <i class="fas fa-book-open-reader"></i>
+                        <span class="nav-item">Chỉnh sửa sinh viên</span>
+                    </a></li>
+                <li><a href="modifyGV.html" class="side-bar-icon">
+                        <i class="fas fa-book-open-reader"></i>
+                        <span class="nav-item">Chỉnh sửa giảng viên</span>
+                    </a></li>
+                <li><a href="sap_xep_lop_hoc.html" class="side-bar-icon">
+                        <i class="fas fa-book-open-reader"></i>
+                        <span class="nav-item">Sắp xếp lớp học</span>
+                    </a></li>
+                <li>
+                    <a href="#" class="side-bar-icon">
+                        <i class="fas fa-solid fa-right-from-bracket"></i>
+                        <span class="nav-item" id="signoutbutton">Đăng xuất</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <!-- Vị trí thanh nav, copy từ file HomeQTV.html qua
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        -->
+
+
+
+    <form id="MainForm">
+        <div class="main1">
+            <div class="Dang-nhap">
+                <p id="msg" class="Dang-nhap"></p>
+            </div>
+
+            <div id="div1">
+                <div class="input-box" id="dot">
+                    Đợt đăng kí môn hiện tại
+                    <div class="rounded-rectangle-login">
+                        <input type="text" id="dot_dki" class="input-field" placeholder="" readonly>
+                    </div>
+                </div>
+                <div id="button1">
+                    <button id="updkiBtn">Chuyển đợt</button>
+                    <button id="closeBtn" style="display: none;">Mở/Kết thúc đợt</button>
+                </div>
+
+                <div class="input-box" id="maMH">
+                    Mã môn học
+                    <div class="rounded-rectangle-login">
+                        <input type="text" id="idInp" class="input-field" placeholder="">
+                    </div>
+                </div>
+
+                <button id="findBtn">Tìm kiếm môn học</button>
+
+                <div class="input-box" id="sisi">
+                    Sĩ số tối thiểu
+                    <div class="rounded-rectangle-login">
+                        <input type="text" id="min_numofsvInp" class="input-field" placeholder="" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <div id="div2">
+                <div class="title">
+                    QUẢN TRỊ VIÊN TIẾN HÀNH SẮP XẾP LỚP HỌC
+                    <br>
+                    <br>
+                </div>
+                <p id="note">Lưu ý: Chỉ có thể chỉnh sửa các thông tin bên dưới khi đang trong giai đoạn ĐÓNG ĐỢT 1</p>
+                <div class="input-box" id="numClass">
+                    Số lượng lớp học
+                    <div class="rounded-rectangle-login">
+                        <input type="text" id="numofclassInp" class="input-field" placeholder="">
+                    </div>
+                </div>
+                <div class="input-box" id="eachsiso">
+                    Sĩ số mỗi lớp
+                    <div class="rounded-rectangle-login">
+                        <input type="text" id="sisoInp" class="input-field" placeholder="">
+                    </div>
+                </div>
+                <p id="note1">Lưu ý: Mỗi giảng viên cách nhau bởi dấu '-', ví dụ: GV001-GV002-GV003</p>
+
+                <div class="input-box" id="dki">
+                    Đăng kí giảng viên giảng dạy cho từng lớp
+                    <div class="rounded-rectangle-login">
+                        <input type="text" id="dkigvInp" class="input-field" placeholder="">
+                    </div>
+                </div>
+                <div>
+                    <button id="AddBtn">Đăng kí lớp học</button>
+                    <button id="UpdBtn">Cập nhật thông tin</button>
+                </div>
+
+                <div id="div3">
+
+                    <div class="title">
+    
+                        QUẢN TRỊ VIÊN TIẾN HÀNH SẮP XẾP THỜI GIAN VÀ ĐỊA ĐIỂM CHO TỪNG LỚP HỌC
+    
+                        <br>
+    
+                        <br>
+    
+                    </div>
+    
+                    <p id="note2">Lưu ý: Chỉ có thể chỉnh sửa các thông tin bên dưới khi đang trong giai đoạn ĐÓNG ĐỢT 2</p>
+    
+                    <div class="input-box" id="dki1">
+    
+                        Thông tin tuần học cho môn học này
+    
+                        <div class="rounded-rectangle-login">
+    
+                            <input type="text" id="tuan_hoc" class="input-field" placeholder="">
+    
+                        </div>
+    
+                        <button id="submit_tuan_hoc">Xác nhận</button>
+    
+                    </div>
+    
+                </div>
+
+                <div>
+                    <button id="Sche">Sắp xếp thời khóa biểu</button>
+                </div>
+
+            </div>
+        </div>
+    </form>
+</body>
+
+</html>

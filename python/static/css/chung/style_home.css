@@ -1,0 +1,329 @@
+*{
+    margin: 0;
+    padding: 0;
+    outline: none;
+    border: none;
+    text-decoration: none;
+    box-sizing: border-box;
+    font-family: "Poppins",sans-serif;
+}
+body{
+    background: #E8F1F2;
+    height: 100vh;
+    background-image: url('https://firebasestorage.googleapis.com/v0/b/fir-d023a.appspot.com/o/Img%2FHome%2FDH_DEF2.jpg?alt=media&token=5feb4f44-c78a-4e2e-ae98-abaef1831179');
+    
+}
+/* thanh điều khiển*/
+nav{
+    border: #00173D;
+    border-radius: 40px;
+    position: sticky;
+    left: 10px;
+    width: 90px;
+    height: 93vh;
+    margin-top: 10px;
+    background: #00173D;
+    overflow: hidden;
+    transition: 1s;
+}
+/* animation cho thanh điều khiển*/
+nav:hover{
+    width: 360px;
+}
+
+/* Chỉnh logo và avatar*/
+.logo{
+    text-align: center;
+    display: flex;
+    margin: 0px 0px 0px 0px;
+    padding-bottom: 2rem;
+}
+.logo img{
+    height: 45px;
+    width: 60px;
+    border-radius: 50%;
+}
+.logo span{
+    font-weight: bold;
+    padding-left: 15px;
+    font-size: 18px;
+    margin-top: 10px;
+    text-transform: uppercase;
+}
+nav ul li a{
+    position: relative;
+    width: 280px;
+    font-size: 14px;
+    color: #C2E8F8;
+    display: table;
+    padding:10px
+}
+.avatar
+{
+    text-align: center;
+    display: flex;
+    margin: 0px 0px 0px 0px;
+    padding-bottom: 1rem;
+}
+.avatar img{
+    margin-left: 8px;
+    height:50px;
+    width: 50px;
+    border-radius: 50%;
+}
+.avatar span{
+    font-weight: bold;
+    font-size: 14px;
+    margin-top: 10px;
+    text-transform: uppercase;
+    padding-left: 15px;
+}
+
+/* Chỉnh vị trí icon của thanh điều khiển*/
+nav .fas{
+    position: relative;
+    width: 70px;
+    height: 40px;
+    top: 12px;
+    font-size: 20px;
+    text-align: center;
+}
+/* Chỉnh vị trí chữ của thanh điều khiển*/
+.nav-item{ 
+    position: relative;
+    top: 12px;
+    margin-left: 16px;
+}
+/*hiệu ứng thanh diều khiển*/
+.side-bar-icon{
+    width: 360px;
+}
+.side-bar-icon:hover{
+    background: #C2E8F8;
+}
+.side-bar-icon:hover i{
+    color: #00173D;
+    transition: 0.5s;
+}
+.side-bar-icon:hover .nav-item{
+    color: #00173D;
+    transition: 0.5s;
+}
+.container{
+    display: flex;
+}
+
+.main{
+    position: relative;
+    padding: 40px;
+    /* width: 100%; */
+}
+.main-top{
+    display: grid;
+    /* width: 100%; */
+    color: #00173D;
+    height: auto;
+}
+.main-top ul li{
+    list-style-type: none;
+}
+.notifications-and-messages {
+    position: absolute;
+    right:0;
+    margin: 10px 30px;
+    font-size: 1.5rem;
+    
+}
+.notifications-and-messages i{
+    margin: 10px;
+}
+.main .main-top .ima-status{
+    position: relative;
+    top:20px;
+    left: 150px;
+    
+    
+}
+.main .main-top .ima-status img{
+    width: 940px;
+    height: 260px;
+    border-radius: 20px;
+}
+/* .main .main-top .ima-status img:hover{
+    width: 970px;
+    height: 290px;
+    border-radius: 20px;
+    
+} */
+.main .main-top .diploma-list a{
+    position: relative;
+    display: inline-block;
+    top:20px;
+    left: 250px;
+    color:#C2E8F8;
+    border-radius: 10px;
+    background-color: #21c2d4;
+    width: 200px;
+    height: 100px;
+    margin: 20px 20px;
+    text-align: center;
+}
+.main .main-top .diploma-list a ul li{
+    list-style-type: none;
+}
+.main .main-top .diploma-list a:hover{
+    color: #21c2d4;
+    background-color: black;
+    transition: 1s;
+    width: 220px;
+    height: 120px;
+}
+.main .main-top .progress-multi ul li p{
+    display: inline-block;
+    text-align: center;
+
+}
+.main .main-top .progress-multi ul {
+    display: inline-block;
+    list-style-type: none;
+    margin: 15px;
+    
+}
+.main .main-top .progress-multi{
+    position: relative;
+    top:20px;
+    left: 250px;
+}
+.main .main-top .progress-multi ul li{
+    color:#C2E8F8;
+    border-radius: 10px;
+    background-color: #17227a;
+    width: 300px;
+    height: 40px;
+    margin: 20px 10px;
+    padding-top: 10px;
+    text-align: center;
+}
+.main .main-top .progress-multi ul li:hover{    
+    width: 320px;
+    height: 60px;
+    color: #17227a;
+    background-color: rgb(213, 187, 55);
+    transition: 0.75s;
+} 
+.fa-solid{
+    position: relative;
+    top:10px;
+    width: 70px;
+    height: 40px;
+    font-size: 20px;
+    text-align: center;
+    
+}
+#signoutbutton{
+    position: relative;
+    margin-left: 16px;
+    
+}
+/* dialog giao diện*/
+.dialog-body{
+    position: relative;
+}
+.dialog{
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 10;
+    align-items: center;
+    justify-content: center; 
+    visibility: hidden;
+    opacity: 0;
+    transition:  opacity linear 0.5s;
+}
+.overplay{
+    background-color:#b0a8a875;
+   
+}
+.dialog:target{
+    visibility: visible;
+    opacity: 1;
+}
+.dialog-body{
+    position: relative;
+    background-color: #fff;
+    max-width: 500px;
+    top: 200px;
+    left: 500px;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);}
+
+.dialog-close-btn{
+    position: absolute;
+    top: 2px;
+    right: 6px;
+    text-decoration: none;
+    color: #333;
+}
+.dialog-btn{
+    position: relative; 
+    top: 50px;
+    left: 1250px;
+    color: #fff;
+    border-radius: 10px;
+    background-color: #21c2d4;
+    width: 200px;
+    height: 100px;
+    margin: 20px 20px;
+    text-align: center;
+    padding: 10px;
+    text-decoration: none;
+    /* z-index: 6; */
+    
+}
+.dialog-btn:hover{   
+     box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+
+.overplay-close{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+}
+#dialog-input{
+    margin-top: 10px;
+    position: relative;
+    background-color: #a19e9e;
+    width: 450px;
+    height: 30px;
+    border-radius: 10px;
+    color: #fff;
+    padding: 10px;
+}
+#dialog-submit{
+    position: relative;
+    background-color: #21c2d4;
+    width: 100px;
+    height: 40px;
+    border-radius: 10px;
+    color: #fff;
+    padding: 10px;
+    margin-top: 10px;
+    margin-left: 170px;
+}
+
+.chon-dot-submit{
+    position: relative;
+    background-color: #21c2d4;
+    width: 100px;
+    height: 40px;
+    border-radius: 10px;
+    color: #fff;
+    padding: 10px;
+    margin-top: 10px;
+    margin-left: 170px;
+}

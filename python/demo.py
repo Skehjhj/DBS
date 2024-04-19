@@ -1,7 +1,7 @@
 import pypyodbc as odbc
 DRIVER_NAME = 'SQL Server'
 SERVER_NAME = 'DESKTOP-AOS1TRG'
-DATABASE_NAME = 'lms'
+DATABASE_NAME = 'lms_tmp'
 
 connection_string = f"""
     DRIVER={{{DRIVER_NAME}}};

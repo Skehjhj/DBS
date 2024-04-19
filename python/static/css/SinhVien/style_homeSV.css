@@ -1,0 +1,69 @@
+/* dialog giao diện*/
+.dialog-body {
+    position: relative;
+    background-color: #fff;
+    max-width: 500px;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    /* Căn giữa theo chiều ngang và chiều dọc */
+    margin: auto;
+    top: 0; bottom: 0; left: 0; right: 0;
+    height: fit-content; /* Điều chỉnh chiều cao tự động theo nội dung */
+}
+
+.dialog {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 10;
+    align-items: center;
+    justify-content: center;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity linear 0.5s;
+    display: flex; /* Thêm thuộc tính này để hỗ trợ căn giữa */
+}
+
+.overplay {
+    background-color: #b0a8a875;
+}
+
+.dialog:target {
+    visibility: visible;
+    opacity: 1;
+}
+
+.dialog-close-btn {
+    position: absolute;
+    top: 2px;
+    right: 6px;
+    text-decoration: none;
+    color: #333;
+}
+
+.chon-dot-submit {
+    position: relative;
+    background-color: #21c2d4;
+    width: 100px;
+    height: 40px;
+    border-radius: 10px;
+    color: #fff;
+    padding: 10px;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto; /* Thêm để căn giữa các button */
+    display: block; /* Để button hiển thị trên một dòng riêng */
+}
+
+
+#hero {
+    width: 100%;
+    height: 80vh;
+    background: url("https://firebasestorage.googleapis.com/v0/b/fir-d023a.appspot.com/o/Img%2FHome%2FHomeSV%2FHOMESV.jpg?alt=media&token=260ce239-7397-4e6d-bc5d-f9eb8f979024") top center;
+    background-size: cover;
+    position: relative;
+}
+

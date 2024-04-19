@@ -30,6 +30,6 @@ def hello_world():
         })
 
     # Render the HTML template and pass the student data
-    return render_template('hello.html', students=student_data)
+    return render_template('video.html', students=student_data)
     
     

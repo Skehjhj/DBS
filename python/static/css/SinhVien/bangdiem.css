@@ -1,0 +1,256 @@
+*{
+    margin: 0;
+    padding: 0;
+    outline: none;
+    border: none;
+    text-decoration: none;
+    box-sizing: border-box;
+    font-family: "Poppins",sans-serif;
+}
+body{
+
+    justify-content: left; /* Căn giữa theo chiều ngang */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    background:#E8F1F2 url('https://firebasestorage.googleapis.com/v0/b/fir-d023a.appspot.com/o/Img%2FHome%2FDH_DEF2.jpg?alt=media&token=5feb4f44-c78a-4e2e-ae98-abaef1831179') no-repeat center center;
+    background-size: cover;
+    height: 100vh;
+}
+.temp{
+    display: none;
+}
+.main{
+    display: flex;
+    margin-left: 40px;
+    margin-top: 60px;
+}
+
+nav{
+    border: #00173D;
+    border-radius: 40px;
+    position: relative;
+    left: 5px;
+    width: 90px;
+    height: 150vh;
+    background: #00173D;
+    overflow: hidden;
+    transition: 1s;
+}
+/* animation cho thanh điều khiển*/
+nav:hover{
+    width: 360px;
+}
+
+/* Chỉnh logo và avatar*/
+.logo{
+    text-align: center;
+    display: flex;
+    margin: 0px 0px 0px 0px;
+    padding-bottom: 2rem;
+}
+.logo img{
+    height: 45px;
+    width: 60px;
+    border-radius: 50%;
+}
+.logo span{
+    font-weight: bold;
+    padding-left: 15px;
+    font-size: 18px;
+    margin-top: 10px;
+    text-transform: uppercase;
+}
+nav ul li a{
+    position: relative;
+    width: 280px;
+    font-size: 14px;
+    color: #C2E8F8;
+    display: table;
+    padding:10px
+}
+.avatar
+{
+    text-align: center;
+    display: flex;
+    margin: 0px 0px 0px 0px;
+    padding-bottom: 1rem;
+}
+.avatar img{
+    margin-left: 8px;
+    height:50px;
+    width: 50px;
+    border-radius: 50%;
+}
+.avatar span{
+    font-weight: bold;
+    font-size: 14px;
+    margin-top: 10px;
+    text-transform: uppercase;
+    padding-left: 15px;
+}
+
+/* Chỉnh vị trí icon của thanh điều khiển*/
+nav .fas{
+    position: relative;
+    width: 70px;
+    height: 40px;
+    top: 12px;
+    font-size: 20px;
+    text-align: center;
+}
+/* Chỉnh vị trí chữ của thanh điều khiển*/
+.nav-item{ 
+    position: relative;
+    top: 12px;
+    margin-left: 16px;
+}
+/*hiệu ứng thanh diều khiển*/
+.side-bar-icon{
+    width: 360px;
+}
+.side-bar-icon:hover{
+    background: #C2E8F8;
+}
+.side-bar-icon:hover i{
+    color: #00173D;
+    transition: 0.5s;
+}
+.side-bar-icon:hover .nav-item{
+    color: #00173D;
+    transition: 0.5s;
+}
+.container{
+    display: flex;
+}
+.scroll-container{
+    margin: 0 30px 0 30px;
+    background-color: #fff;
+}
+
+
+.notifications-and-messages {
+    position: absolute;
+    right:0;
+    margin: 10px 30px;
+    font-size: 1.5rem;
+    
+}
+.notifications-and-messages i{
+    margin: 10px;
+}
+
+.fa-solid{
+    position: relative;
+    top:10px;
+    width: 70px;
+    height: 40px;
+    font-size: 20px;
+    text-align: center;
+    
+}
+#signoutbutton{
+    position: relative;
+    margin-left: 16px;
+    
+}
+/* dialog giao diện*/
+.dialog-body{
+    position: relative;
+}
+.dialog{
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 10;
+    align-items: center;
+    justify-content: center; 
+    visibility: hidden;
+    opacity: 0;
+    transition:  opacity linear 0.5s;
+}
+.overplay{
+    background-color:#b0a8a875;
+   
+}
+.dialog:target{
+    visibility: visible;
+    opacity: 1;
+}
+.dialog-body{
+    position: relative;
+    background-color: #fff;
+    max-width: 500px;
+    top: 200px;
+    left: 500px;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);}
+
+.dialog-close-btn{
+    position: absolute;
+    top: 2px;
+    right: 6px;
+    text-decoration: none;
+    color: #333;
+}
+.dialog-btn{
+    position: relative; 
+    top: 50px;
+    left: 1250px;
+    color: #fff;
+    border-radius: 10px;
+    background-color: #21c2d4;
+    width: 200px;
+    height: 100px;
+    margin: 20px 20px;
+    text-align: center;
+    padding: 10px;
+    text-decoration: none;
+    /* z-index: 6; */
+    
+}
+.dialog-btn:hover{   
+     box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+
+.overplay-close{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+}
+#dialog-input{
+    margin-top: 10px;
+    position: relative;
+    background-color: #a19e9e;
+    width: 450px;
+    height: 30px;
+    border-radius: 10px;
+    color: #fff;
+    padding: 10px;
+}
+#dialog-submit{
+    position: relative;
+    background-color: #21c2d4;
+    width: 100px;
+    height: 40px;
+    border-radius: 10px;
+    color: #fff;
+    padding: 10px;
+    margin-top: 10px;
+    margin-left: 170px;
+}
+
+.chon-dot-submit{
+    position: relative;
+    background-color: #21c2d4;
+    width: 100px;
+    height: 40px;
+    border-radius: 10px;
+    color: #fff;
+    padding: 10px;
+    margin-top: 10px;
+    margin-left: 170px;
+}
