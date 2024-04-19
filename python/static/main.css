@@ -1,0 +1,20 @@
+/* Target the table element */
+table {
+    border-collapse: collapse; /* Collapse borders for adjacent cells */
+    width: 600px; /* Set a width for the table */
+  }
+  
+  /* Style the table header (<th>) */
+  th {
+    background-color: #F0F0F0; /* Light gray background */
+    padding: 10px; /* Add padding to content */
+    border: 1px solid #ddd; /* Add a thin border */
+    text-align: left; /* Align content to the left */
+  }
+  
+  /* Style the table data (<td>) */
+  td {
+    padding: 5px; /* Add padding to content */
+    border: 1px solid #ddd; /* Add a thin border */
+  }
+  
