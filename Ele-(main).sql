@@ -246,7 +246,7 @@ insert into UserTable (userID, mail, name, DoB, sex) values ('SV19', 'mennalss@h
 insert into UserTable (userID, mail, name, DoB, sex) values ('SV20', 'sfochst@hcmut.edu.vn', 'Salomo Fochs', '20-12-2003', 'Male');
 
 UPDATE UserTable
-SET password = "1234567";
+SET password = '1234567';
 
 insert into Message (MessageID, Content, SenderID) values (1, 'Cras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque.', 'GV02');
 insert into Message (MessageID, Content, SenderID) values (2, 'Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem.', 'SV13');

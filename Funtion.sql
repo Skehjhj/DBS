@@ -19,26 +19,39 @@ ORDER BY
 
 --AI Gen 1 số code só j tham khảo
 
-/*
+
 --xem 1 học sinh đk môn gì--
 DELIMITER $$
 
-CREATE PROCEDURE get_course_enrollments_by_user_id(
-  @user_id INT
+CREATE PROCEDURE get_course_enroll(
+  @user_id CHAR(9)
 )
 BEGIN
 
-  SELECT c.course_name, c.course_description, e.enrollment_date, e.enrollment_status
-  FROM courses AS c
-  JOIN enrollments AS e ON c.course_id = e.course_id
-  WHERE e.user_id = @user_id
-  ORDER BY c.course_name ASC;
+  SELECT c.CourseID
+  FROM Class AS c
+  JOIN Study AS s ON s.ClassID = c.ClassID
+  WHERE s.StuID = @user_id
+  ORDER BY c.CourseID ASC;
 
 END $$
 
 DELIMITER ;
 
-CALL
+CREATE TABLE highest_scores (
+    StuID INT,
+    TestID INT,
+    Score INT,
+    PRIMARY KEY (StuID, TestID)
+);
+
+-- Chọn các bài làm có điểm cao nhất và chèn vào bảng mới
+INSERT INTO highest_scores (StuID, TestID, Score)
+SELECT StuID, TestID, MAX(Score)
+FROM StuWork
+GROUP BY StuID, TestID;
+
+/*
 
 -tìm diem trung binh cua 1 giang vien--
 DELIMITER $$
