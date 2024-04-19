@@ -1,0 +1,41 @@
+/* Style the modal */
+body {
+    font-family: "Poppins",sans-serif;
+  }
+  
+  
+  .table {
+      border: 2px solid black;
+      border-collapse: collapse;
+    }
+  
+  .table th, .table td {
+      border: 1px solid black;
+      border-top: 2px solid black; 
+      border-bottom: 2px solid black; 
+      padding: 8px;
+      text-align: left;
+  }
+  .table thead th {
+      text-align: center;
+      padding-top: 12px;
+      padding-bottom: 12px;
+      background: #00173D;
+      color: white;
+      border-top: 2px solid black; 
+      border-bottom: 2px solid black; 
+  }
+  
+  
+  @media (max-width: 768px) {
+      #studentGradeTable {
+          width: 100%;
+      }
+  }
+  
+  #oddrow {
+      background-color: #87CEEB;
+      border-top: 2px solid black; 
+  }
+  
+  

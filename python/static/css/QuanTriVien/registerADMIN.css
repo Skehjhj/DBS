@@ -1,0 +1,244 @@
+*{
+    margin: 0;
+    padding: 0;
+    text-decoration: none;
+    font-family: "Poppins",sans-serif;
+}
+
+/*style trong login */
+
+body{
+    display: flex;
+    justify-content: left; /* Căn giữa theo chiều ngang */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    background: #E8F1F2;
+    height: 100vh;
+    background-image: url('https://firebasestorage.googleapis.com/v0/b/fir-d023a.appspot.com/o/Img%2FHome%2FDH_DEF2.jpg?alt=media&token=5feb4f44-c78a-4e2e-ae98-abaef1831179');
+    background-repeat: no-repeat;
+    background-attachment: fixed;  
+    background-size: cover;
+}
+/* thanh điều khiển*/
+nav{
+    border: #00173D;
+    border-radius: 40px;
+    position: relative;
+    top: 6px;
+    left: 10px;
+    width: 90px;
+    height: 87vh;
+    margin-top: 5px;
+    margin-right: 40px;
+    background: #00173D;
+    overflow: hidden;
+    transition: 1s;
+}
+/* animation cho thanh điều khiển*/
+nav:hover{
+    width: 360px;
+}
+
+/* Chỉnh logo và avatar*/
+.logo{
+    text-align: center;
+    align-items: center ;
+    display: flex;
+    margin: 0px 0px 0px 5px;
+    padding-bottom: 2rem;
+}
+.logo img{
+    height: 45px;
+    width: 60px;
+    border-radius: 50%;
+}
+.logo span{
+    font-weight: bold;
+    padding-left: 15px;
+    font-size: 18px;
+    text-transform: uppercase;
+}
+nav ul li a{
+    position: relative;
+    width: 280px;
+    font-size: 14px;
+    color: #C2E8F8;
+    display: table;
+    padding:10px
+}
+.avatar
+{
+    text-align: center;
+    display: flex;
+    margin: 0px 0px 0px 0px;
+    padding-bottom: 1rem;
+}
+.avatar img{
+    margin-left: 8px;
+    height:50px;
+    width: 50px;
+    border-radius: 50%;
+}
+.avatar span{
+    font-weight: bold;
+    font-size: 14px;
+    margin-top: 10px;
+    text-transform: uppercase;
+    padding-left: 15px;
+}
+
+/* Chỉnh vị trí icon của thanh điều khiển*/
+nav .fas{
+    position: relative;
+    width: 70px;
+    height: 40px;
+    top: 12px;
+    font-size: 20px;
+    text-align: center;
+}
+/* Chỉnh vị trí chữ của thanh điều khiển*/
+.nav-item{ 
+    position: relative;
+    top: 12px;
+    margin-left: 16px;
+}
+/*hiệu ứng thanh diều khiển*/
+.side-bar-icon{
+    width: 360px;
+}
+.side-bar-icon:hover{
+    background: #C2E8F8;
+}
+.side-bar-icon:hover i{
+    color: #00173D;
+    transition: 0.5s;
+}
+.side-bar-icon:hover .nav-item{
+    color: #00173D;
+    transition: 0.5s;
+}
+
+#MainForm{
+    margin: 1vh;
+}
+
+.main1 {
+    position: relative;
+    left: 50px;
+    top: 10px;
+    padding: 10px;
+    width: 900px;
+    height: 85vh;
+    background-color: #031c458f;
+    border-radius: 50px; /* Điều chỉnh giá trị này để thay đổi độ cong của góc */
+    justify-content: center;
+    align-items: center;
+}
+.Tieude {
+    text-align: center;
+    margin: 20px;
+    font-size: 38px;
+    color: #FFFF; /* Màu chữ */
+    font-weight: bold; /* Chữ in đậm */
+    font-family: 'Noto Serif', serif;
+}
+
+.input-box{
+    width: 350px;
+    margin-top: 20px;
+    margin-left: 10px;
+    text-align: left;
+    font-size: 18px;
+    color: #FFFF; /* Màu chữ */
+    font-weight: bold; /* Chữ in đậm */
+}
+
+.rounded-rectangle-login input[type="text"] {
+    /* width: 850px; */
+    height: 20px;
+    margin-left: 5px;
+    padding: 10px; /* Khoảng cách bên trong input */ 
+    border: none; /* Loại bỏ viền */
+    background-color: #D9D9D9;
+    border-radius: 20px; /* Điều chỉnh giá trị này để thay đổi độ cong của góc */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.main1 .logo img {
+    position: relative;
+    top: 10px;
+    left: 360px;
+    width: 180px;
+    height: 140px;
+    border-radius: 50%;
+}
+
+.log-in button:hover {
+    background-color: #054b36;
+    color: aliceblue;
+}
+.dang-ki-tk{
+    position: relative;
+    bottom: 50px;
+    
+}
+.dang-ki-tk button {
+    position: relative;
+    left: 300px;
+    width: 300px;
+    height: 40px;
+    border-radius: 10px;
+    background-color: #031c45bd;
+    color: #FFFF;
+    font-size: large;
+    font-family: 'Times New Roman', Times, serif;
+}
+.dang-ki-tk button:hover {
+    background-color: #054b36;
+}
+
+
+/*input  ten dang nhap QTV*/
+
+#nameInp{
+    width: 300px;
+    background-color: #cdd3aa;
+}
+#emailInp{
+    width: 300px;
+    background-color: #cdd3aa;
+}
+#idInp{
+    width: 300px;
+    background-color: #cdd3aa;
+}
+#passwordInp{
+    width: 300px;
+    background-color: #cdd3aa;
+}
+
+/*position box form QTV*/
+#box-name{
+    position: relative;
+    top: 50px;
+    left: 70px;
+}
+#box-email{
+    position: relative;
+    top: 50px;
+    left: 70px;
+}
+#box-id{
+    position: relative;
+    bottom: 112px;
+    left: 500px;
+
+}
+#box-pass{
+    position: relative;
+    bottom: 112px;
+    left: 500px;
+}
+

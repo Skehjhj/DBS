@@ -1,0 +1,414 @@
+
+*{
+    padding:0;
+    margin:0;
+    text-decoration: none;
+    font-family: "Poppins",sans-serif;
+}
+
+body {
+    display: flex;
+    justify-content: center; /* Căn giữa theo chiều ngang */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    height: 100vh; /* Chiều cao của toàn bộ trang */
+    background-color: #E8F1F2   ; /* Màu nền của toàn bộ trang */
+    margin: 0; /* Loại bỏ margin mặc định */
+    padding: 0; /* Loại bỏ padding mặc định */
+}
+.container {
+
+    display: flex;
+    position: relative;
+    top: 30px
+}
+
+.fa-solid{
+    position: relative;
+    top:10px;
+    width: 70px;
+    height: 40px;
+    font-size: 20px;
+    text-align: center;
+    
+}
+
+#signoutbutton{
+    position: relative;
+    margin-left: 16px;
+    
+}
+
+/* dialog giao diện*/
+.dialog-body{
+    position: relative;
+}
+
+.dialog{
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 10;
+    align-items: center;
+    justify-content: center; 
+    visibility: hidden;
+    opacity: 0;
+    transition:  opacity linear 0.5s;
+}
+
+.overplay{
+    background-color:#b0a8a875;
+}
+
+.dialog:target{
+    visibility: visible;
+    opacity: 1;
+}
+
+.dialog-body{
+    position: relative;
+    background-color: #fff;
+    max-width: 500px;
+    top: 200px;
+    left: 500px;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+.dialog-close-btn{
+    position: absolute;
+    top: 2px;
+    right: 6px;
+    text-decoration: none;
+    color: #333;
+}
+
+.dialog-btn{
+    position: relative; 
+    top: 50px;
+    left: 1250px;
+    color: #fff;
+    border-radius: 10px;
+    background-color: #21c2d4;
+    width: 200px;
+    height: 100px;
+    margin: 20px 20px;
+    text-align: center;
+    padding: 10px;
+    text-decoration: none;
+    /* z-index: 6; */
+}
+
+.dialog-btn:hover{   
+     box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+.overplay-close{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+}
+
+#dialog-input{
+    margin-top: 10px;
+    position: relative;
+    background-color: #a19e9e;
+    width: 450px;
+    height: 30px;
+    border-radius: 10px;
+    color: #fff;
+    padding: 10px;
+}
+
+#dialog-submit{
+    position: relative;
+    background-color: #21c2d4;
+    width: 100px;
+    height: 40px;
+    border-radius: 10px;
+    color: #fff;
+    padding: 10px;
+    margin-top: 10px;
+    margin-left: 170px;
+}
+
+.chon-dot-submit{
+    position: relative;
+    background-color: #21c2d4;
+    width: 100px;
+    height: 40px;
+    border-radius: 10px;
+    color: #fff;
+    padding: 10px;
+    margin-top: 10px;
+    margin-left: 170px;
+}
+
+/* thanh điều khiển*/
+nav{
+    border: #00173D;
+    border-radius: 40px;
+    position: relative;
+    top: 77px;
+    right: 160px;
+    width: 90px;
+    height: 106vh;
+    margin-top: 10px;
+    margin-left: 20px;
+    background: #00173D;
+    overflow: hidden;
+    transition: 1s;
+}
+/* animation cho thanh điều khiển*/
+nav:hover{
+    position: relative;
+    top: 70px;
+    right: 50px;
+    width: 300px;
+}
+
+/* Chỉnh logo và avatar*/
+.logo{
+    text-align: center;
+    display: flex;
+    margin: 0px 0px 0px 0px;
+    padding-bottom: 2rem;
+}
+
+.logo img{
+    max-height: 45px;
+    max-width:100%;
+    height:auto;
+    width: 60px;
+    border-radius: 50%;
+}
+
+.logo span{
+    font-weight: bold;
+    padding-left: 15px;
+    font-size: 18px;
+    margin-top: 10px;
+    text-transform: uppercase;
+}
+
+nav ul li a{
+    position: relative;
+    width: 280px;
+    font-size: 14px;
+    color: #C2E8F8;
+    display: table;
+    padding:10px
+}
+
+.avatar{
+    text-align: center;
+    display: flex;
+    margin: 0px 0px 0px 0px;
+    padding-bottom: 1rem;
+}
+
+.avatar img{
+    margin-left: 8px;
+    max-height:50px;
+    width: 50px;
+    max-width:100%;height:auto;
+    border-radius: 50%;
+}
+
+.avatar span{
+    font-weight: bold;
+    font-size: 14px;
+    margin-top: 10px;
+    text-transform: uppercase;
+    padding-left: 15px;
+}
+
+/* Chỉnh vị trí icon của thanh điều khiển*/
+nav .fas{
+    position: relative;
+    width: 70px;
+    height: 40px;
+    top: 12px;
+    font-size: 20px;
+    text-align: center;
+}
+/* Chỉnh vị trí chữ của thanh điều khiển*/
+.nav-item{ 
+    position: relative;
+    top: 12px;
+    margin-left: 16px;
+}
+
+/*hiệu ứng thanh diều khiển*/
+.side-bar-icon{
+    width: 360px;
+}
+
+.side-bar-icon:hover{
+    background: #C2E8F8;
+}
+
+.side-bar-icon:hover i{
+    color: #00173D;
+    transition: 0.5s;
+}
+
+.side-bar-icon:hover .nav-item{
+    color: #00173D;
+    transition: 0.5s;
+}
+
+#signoutbutton{
+    position: relative;
+    margin-left: 16px;
+    
+}
+
+.userIn {
+    position: relative;
+    top: 10px;
+    width: 800px;
+    max-width: 100%;
+    max-height:  100vh;
+    background-color: #FFFFFF;
+    border-radius: 20px;
+    padding: 40px 40px 0 40px;
+    margin: 78px 0 0 0;
+    /* Điều chỉnh giá trị này để thay đổi độ cong của góc */
+    border: none;
+    /* Loại bỏ viền */
+    justify-content: center;
+    align-items: center;
+}
+
+.userIn .tittleIn {
+    font-size:10vw
+    text-align: left;
+    font-size: 30px;
+    color: #00173D;
+    font-weight: bold;
+    max-width: 400px;
+}
+
+.imgPro{
+    position: relative;
+    left: 500px;
+    bottom: 50px;
+    max-width: 300px;
+    text-align: center;
+
+}
+
+.imgPro #myimg {
+    width: 113.386px;
+    height: 151.181px;
+    border-radius: 50%;
+    max-height: 200px;
+    max-width: 200px;
+    border: 2px black solid;
+    margin: 10px auto;
+}
+
+.imgPro #upbtn{
+    width: 50px;
+    padding: 5px 5px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.userInfoForm1 {
+    display: grid;
+    max-width: 300px;
+    position: relative;
+    bottom: 200px;
+    width: 300px;
+
+    padding: 20px;
+    border-radius: 5px;
+}
+
+.userInfoForm2 {
+    display: grid;
+    max-width: 300px;
+    position: relative;
+    bottom: 615px;
+    width: 300px;
+    left: 400px;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#namebox {
+    display: none;
+}
+
+#extlab {
+    display: none;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.userInfoForm1 label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.userInfoForm1 input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.userInfoForm2 label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.userInfoForm2 input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#UpdBtn {
+    width: 100px;
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 0;
+}
+
+#upImgbtn {
+    position: relative;
+    right: 140px;
+    top: 200px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 5;
+    top: 180px;
+}
+
+@media screen and (max-width: 800px) {
+    .left, .main, .right {
+      width: 100%; /* The width is 100%, when the viewport is 800px or smaller */
+    }
+}

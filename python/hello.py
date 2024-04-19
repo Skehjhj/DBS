@@ -1,8 +1,8 @@
 from flask import Flask, render_template
 import pypyodbc as odbc
 DRIVER_NAME = 'SQL Server'
-SERVER_NAME = 'DESKTOP-AOS1TRG'
-DATABASE_NAME = 'lms'
+SERVER_NAME = 'DANGKHOACOMPUTE'
+DATABASE_NAME = 'lms_tmp'
 
 connection_string = f"""
     DRIVER={{{DRIVER_NAME}}};
@@ -30,6 +30,6 @@ def hello_world():
         })
 
     # Render the HTML template and pass the student data
-    return render_template('hello.html', students=student_data)
+    return render_template('video.html', students=student_data)
     
     
