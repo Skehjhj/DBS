@@ -12,6 +12,6 @@ connection_string = f"""
 
 connection = odbc.connect(connection_string)
 cursor = connection.cursor()
-cursor.execute('SELECT * FROM dbo.Student')
+cursor.execute('SELECT * FROM Study')
 for row in cursor.fetchall():
     print(row)
