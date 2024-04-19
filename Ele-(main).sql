@@ -16,7 +16,10 @@ CREATE      TABLE       UserTable (
 ALTER TABLE UserTable
 ADD CONSTRAINT CK_Sex
 CHECK (sex IN ('Male', 'Female'));
-ADD CHECK (mail LIKE '%@hcmut.edu.vn');
+
+ALTER TABLE UserTable
+ADD CONSTRAINT CK_mail
+CHECK (mail LIKE '%@hcmut.edu.vn');
 
 
 CREATE TABLE Message(
@@ -126,7 +129,7 @@ CREATE TABLE StuWork (
   StuWork VARCHAR(255),
   DoTime TIME,
   DoneTime DATE,
-  Score DOUBLE
+  Score INTEGER
 );
 
 --- Continues ---
@@ -135,7 +138,7 @@ CREATE TABLE Study(
     StuID CHAR(9) REFERENCES Student (StuID),
     ClassID INTEGER REFERENCES Class (ClassID),
     CONSTRAINT pk_study PRIMARY KEY (StuID, ClassID),
-    Avg_Score DOUBLE,
+    Avg_Score INTEGER
 );
 
 CREATE TRIGGER UpdateClassSize
@@ -156,33 +159,30 @@ BEGIN
     END
 END;
 
--- mình chỉ tính điểm dựa trên test cao điểm nhất th --
+/*
+CREATE TABLE IF NOT EXISTS HighestScore(
+  StuID INT,
+  TestID INT,
+  TimesID INT,
+  Score INT
+);
 
-CREATE TABLE HighestScores AS
+INSERT INTO HighestScore (StuID, TestID, TimesID, Score)
 SELECT
   s.StuID,
   s.TestID,
-  s.TimesID
-  MAX(s.Score) AS HighestScore
-FROM
-  StuWork s
-  JOIN (
-    SELECT
-      StuID,
-      TestID,
-      MAX(Score) AS MaxScore
-    FROM
-      StuWork
-    GROUP BY
-      StuID,
-      TestID
-  ) max_scores
-    ON s.StuID = max_scores.StuID
-    AND s.TestID = max_scores.TestID
-    AND s.Score = max_scores.MaxScore
-GROUP BY
-  s.StuID,
-  s.TestID;
+  s.TimesID,
+  s.Score
+FROM StuWork s
+INNER JOIN (
+  SELECT StuID, TestID, MAX(Score) AS MaxScore
+  FROM StuWork
+  GROUP BY StuID, TestID  -- Only group by StuID and TestID here
+) max_scores
+ON s.StuID = max_scores.StuID
+AND s.TestID = max_scores.TestID
+AND s.Score = max_scores.MaxScore;
+*/
 
 /*
 DELIMITER //
