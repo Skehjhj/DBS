@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin sinh viên</title>
+
+    <link rel="stylesheet" href="/static/css/QuanTriVien/style-modi-SV.css">
+    <!-- <script src="./js/QuanTriVien/angular.min.js"></script>
+    <script src="./js/QuanTriVien/angular-route.min.js"></script>
+    <script src="./js/QuanTriVien/app.js"></script>
+    <script src="./js/QuanTriVien/checkmk.js"></script> -->
+    <script src="https://kit.fontawesome.com/2c32e62c1f.js" crossorigin="anonymous"></script>
+    <!-- Favicons -->
+    <link rel="shortcut icon" type="image/png" href="/static/assets/img/D.png"/>
+</head>
+
+<body ng-app="myapp" ng-controller="homeCtrl">
+    <!-- Vị trí thanh nav, copy từ file HomeQTV.html qua
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        -->
+        <nav>
+            <ul>
+                <li><a href="#" class="logo">
+                        <img
+                            src="https://firebasestorage.googleapis.com/v0/b/fir-d023a.appspot.com/o/Img%2FHome%2F01_logobachkhoasang.png?alt=media&token=6e835bd4-9c3f-4b16-8c4d-36f87c7e7c9d">
+
+                        <span class="nav-item">bkel</span>
+                    </a></li>
+                <li><a href="HomeQTV.html" class="side-bar-icon">
+                        <i class="fas fa-home"></i>
+                        <span class="nav-item">Trang chủ</span>
+                    </a></li>
+                <li><a href="registerADMIN.html" class="side-bar-icon">
+                        <i class="fas fa-newspaper"></i>
+                        <span class="nav-item">Đăng ký quản trị viên</span>
+                    </a></li>
+                <li><a href="monhoc.html" class="side-bar-icon">
+                        <i class="fas fa-newspaper"></i>
+                        <span class="nav-item">Chỉnh sửa học kì và môn học</span>
+                    </a></li>
+                <li><a href="modifySV.html" class="side-bar-icon">
+                        <i class="fas fa-book-open-reader"></i>
+                        <span class="nav-item">Chỉnh sửa sinh viên</span>
+                    </a></li>
+                <li><a href="modifyGV.html" class="side-bar-icon">
+                        <i class="fas fa-book-open-reader"></i>
+                        <span class="nav-item">Chỉnh sửa giảng viên</span>
+                    </a></li>
+                <li><a href="sap_xep_lop_hoc.html" class="side-bar-icon">
+                        <i class="fas fa-book-open-reader"></i>
+                        <span class="nav-item">Sắp xếp lớp học</span>
+                    </a></li>
+                <li>
+                    <a href="#" class="side-bar-icon">
+                        <i class="fas fa-solid fa-right-from-bracket"></i>
+                        <span class="nav-item" id="signoutbutton">Đăng xuất</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <!-- Vị trí thanh nav, copy từ file HomeQTV.html qua
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        -->
+
+    <form id="MainForm">
+        <div class="main1">
+            <div class="Dang-nhap">
+                TÀI KHOẢN SINH VIÊN
+            </div>
+            <div class="title" id="thongtinsinhvien">
+                THÔNG TIN SINH VIÊN
+            </div>
+            <div class="input-box" id="hovaten">
+                Họ và Tên
+                <div class="rounded-rectangle-login">
+                    <input type="text" id="nameInp" class="input-field" placeholder="" required>
+                </div>
+            </div>
+            <div class="input-box" id="mssv">
+                Mã số sinh viên
+                <div class="rounded-rectangle-login">
+                    <input type="text" id="idInp" class="input-field" placeholder="SV + số gồm 3 chữ số, ví dụ: SV001" required>
+                </div>
+            </div>
+
+            <div class="input-box" id="sex">
+                Giới tính
+                <div class="rounded-rectangle-login">
+                    <select class="select-box" id="sexInp" required>
+                        <option value=""></option>
+                        <option value="Nam">Nam</option>
+                        <option value="Nữ">Nữ</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+                </div>
+            </div>
+            <div class="input-box" id="ngaysinh">
+                Ngày sinh
+                <div class="rounded-rectangle-login">
+                    <input type="text" id="dobInp" class="input-field" placeholder="" required>
+                </div>
+            </div>
+            <div class="input-box" id="cancuoc">
+                CCCD
+                <div class="rounded-rectangle-login">
+                    <input type="text" id="cccdInp" class="input-field" placeholder="" required>
+                </div>
+            </div>
+            <div class="input-box" id="emaill">
+                Email
+                <div class="rounded-rectangle-login">
+                    <input type="text" id="emailInp" class="input-field" placeholder="example@hcmut.edu.vn" required>
+                </div>
+            </div>
+            <div class="input-box" id="SDT">
+                Số điện thoại
+                <div class="rounded-rectangle-login">
+                    <input type="text" id="phoneInp" class="input-field" placeholder="" required>
+                </div>
+            </div>
+            <div class="input-box" id="infor">
+                <table>
+                    <thead>
+                        <tr><td>Tỉnh/Thành phố:</td> </tr>
+                        <tr><td>Quận/Huyện:</td></tr>
+                        <tr><td>Phường/Xã:</td></tr>
+                    </thead>
+                    <tbody>
+                        <tr class="ps-tinh">
+
+                            <td>
+                                <div class="rounded-rectangle-login">
+                                    <select id="cityInp" class="select-box" ng-model="tinh"
+                                        ng-options="tinh.Name for tinh in dsTinh" required name="tinh">
+                                    </select>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr class="ps-quan">
+                            <td>
+                                <div class="rounded-rectangle-login">
+                                    <select id="districtInp" class="select-box" ng-model="quan"
+                                        ng-options="quan.Name for quan in  tinh.Districts" required name="quan">
+                                    </select>
+                                </div>
+                            </td>
+
+                        </tr>
+
+                        <tr class="ps-phuong">
+                            <td>
+                                <div class="rounded-rectangle-login">
+                                    <select id="xaInp" class="select-box" ng-model="phuong"
+                                        ng-options="phuong.Name for phuong in quan.Wards" required name="phuong">
+                                    </select>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="input-box" id="diachi">
+                Địa chỉ cụ thể
+                <div class="rounded-rectangle-login">
+                    <input type="text" id="addressInp" class="input-field" placeholder=""
+                        value=" , {{phuong.Name}}, {{quan.Name}}, {{tinh.Name}}" required>
+                </div>
+            </div>
+
+            <div class="input-box" id="mk">
+                Mật khẩu
+                <div class="rounded-rectangle-login">
+                    <input type="text" id="passwordInp" class="input-field" placeholder="" required>
+                </div>
+            </div>
+            <div class="input-box" onchange="checkPassword()" id="check">
+                Xác nhận mật khẩu
+                <div class="rounded-rectangle-login">
+                    <input type="text" id="confirmInp" class="input-field" placeholder="">
+                </div>
+            </div>
+            <div class="confirm_css">
+                <p id="message"></p>
+            </div>
+
+            
+
+            <div class="input-box" id="hocvu">
+                <div class="title" id="thongtinhocvu">
+                    THÔNG TIN HỌC VỤ
+                </div>
+
+                <div class="input-box" id="nganhhoc">
+                    Ngành học
+                    <div class="rounded-rectangle-login">
+                        <select class="select-box" id="nganhInp">
+                            <option value=""></option>
+                            <option value="Khoa học máy tính">Khoa học máy tính</option>
+                            <option value="Kỹ thuật máy tính">Kỹ thuật máy tính</option>
+                            <option value="Điện-Điện tử">Điện-Điện tử</option>
+                            <option value="Xây dựng">Xây dựng</option>
+                            <option value="Cơ khí">Cơ khí</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-box" id="hedaotao">
+                    Hệ đào tạo
+                    <div class="rounded-rectangle-login">
+                        <select class="select-box" id="hedaotaoInp">
+                            <option value=""></option>
+                            <option value="Chính quy">Chính quy</option>
+                            <option value="Chất lượng cao">Chất lượng cao</option>
+                            <option value="Vừa học vừa làm">Vừa học vừa làm</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-box" id="khoa">
+                    Khóa
+                    <div class="rounded-rectangle-login">
+                        <input type="text" id="khoaInp" class="input-field" placeholder="Kxx">
+                    </div>
+                </div>
+                <div class="input-box" id="start">
+                    Ngày bắt đầu học
+                    <div class="rounded-rectangle-login">
+                        <input type="text" id="startstudyInp" class="input-field"
+                            placeholder="dd/mm/yyyy - ví dụ: 01/10/2020">
+                    </div>
+                </div>
+                <div class="input-box" id="end">
+                    Thời hạn đào tạo tối đa
+                    <div class="rounded-rectangle-login">
+                        <input type="text" id="endstudyInp" class="input-field" placeholder="" readonly>
+                    </div>
+                </div>
+                <div class="input-box" id="complete">
+                    Số tín chỉ đã hoàn thành
+                    <div class="rounded-rectangle-login">
+                        <input type="text" id="tinchihoanthanh" class="input-field" placeholder="" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-box" id="gt-btn">
+                <button id="AddBtn">Thêm mới</button>
+                <button id="RetBtn">Tìm kiếm</button>
+                <button id="UpdBtn">Cập nhật</button>
+                <button id="DelBtn">Xóa</button>
+            </div>
+        </div>
+    </form>
+</body>
+
+</html>
