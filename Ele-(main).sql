@@ -4,7 +4,7 @@ use lms;
 
 SET DATEFORMAT dmy;
 CREATE      TABLE       UserTable (
-  userID    CHAR(9)   PRIMARY KEY,
+  userID    VARCHAR(9)   PRIMARY KEY,
   mail      VARCHAR(255),
   name      VARCHAR(255),
   DoB       DATE,
@@ -25,12 +25,12 @@ CHECK (mail LIKE '%@hcmut.edu.vn');
 CREATE TABLE Message(
     MessageID INTEGER PRIMARY KEY,
     Content VARCHAR(255),
-    SenderID CHAR(9),
+    SenderID VARCHAR(9),
     CONSTRAINT fk_sender_user_SenderID FOREIGN KEY (SenderID) REFERENCES UserTable (userID),
 );
 
 CREATE TABLE Receiver(
-  ReceiverID CHAR(9),
+  ReceiverID VARCHAR(9),
   CONSTRAINT fk_receiver_user_ReceiverID FOREIGN KEY (ReceiverID) REFERENCES UserTable (userID),
   MessageID INTEGER,
   CONSTRAINT fk_receiver_message_MessageID FOREIGN KEY (MessageID) REFERENCES Message (MessageID),
@@ -38,14 +38,14 @@ CREATE TABLE Receiver(
 )
 
 CREATE      TABLE       Professor (
-  ProfID    CHAR(9)    PRIMARY KEY,
+  ProfID    VARCHAR(9)    PRIMARY KEY,
   CONSTRAINT   fk_prof_user_ProfID   FOREIGN KEY
                             (ProfID) REFERENCES UserTable (userID),
   Degree      VARCHAR(255),
 );
 
 CREATE      TABLE       Student (
-  StuID    CHAR(9)     PRIMARY KEY,
+  StuID    VARCHAR(9)     PRIMARY KEY,
   CONSTRAINT   fk_stu_user_StuID   FOREIGN KEY
                             (StuID) REFERENCES UserTable (userID),
   DateJoin     DATE,
@@ -80,7 +80,7 @@ CREATE      TABLE      Class (
   Classroom  CHAR(3),
   CourseID  CHAR(6),
   CONSTRAINT  fk_class_course_CourseID FOREIGN KEY (CourseID) REFERENCES Course (CourseID),
-  ProfID    CHAR(9),
+  ProfID    VARCHAR(9),
   CONSTRAINT   fk_class_prof_ProfID   FOREIGN KEY
                             (ProfID) REFERENCES Professor (ProfID),
   Class_size INTEGER
@@ -122,7 +122,7 @@ CREATE TABLE TestQuestions (
 
 
 CREATE TABLE StuWork (
-  StuID CHAR(9) REFERENCES Student (StuID),
+  StuID VARCHAR(9) REFERENCES Student (StuID),
   TestID INTEGER REFERENCES Test (TestID),
   TimesID INTEGER,
   PRIMARY KEY (StuID, TestID, TimesID),
@@ -135,7 +135,7 @@ CREATE TABLE StuWork (
 --- Continues ---
 
 CREATE TABLE Study(
-    StuID CHAR(9) REFERENCES Student (StuID),
+    StuID VARCHAR(9) REFERENCES Student (StuID),
     ClassID INTEGER REFERENCES Class (ClassID),
     CONSTRAINT pk_study PRIMARY KEY (StuID, ClassID),
     Avg_Score INTEGER
