@@ -129,7 +129,7 @@ CREATE TABLE StuWork (
   StuWork VARCHAR(255),
   DoTime TIME,
   DoneTime DATE,
-  Score INTEGER
+  Score DECIMAL(10,2)
 );
 
 --- Continues ---
@@ -138,7 +138,7 @@ CREATE TABLE Study(
     StuID VARCHAR(9) REFERENCES Student (StuID),
     ClassID INTEGER REFERENCES Class (ClassID),
     CONSTRAINT pk_study PRIMARY KEY (StuID, ClassID),
-    Avg_Score INTEGER
+    Avg_Score DECIMAL(10,2)
 );
 
 CREATE TRIGGER UpdateClassSize
@@ -159,94 +159,139 @@ BEGIN
     END
 END;
 
+DROP PROCEDURE IF EXISTS arange_student_on_score;
+CREATE PROCEDURE arange_student_on_score
+	@_in INT
+AS
+BEGIN
+    SELECT
+        s.StuID,
+        s.Avg_Score,
+        u.name
+    FROM
+        Study s
+    JOIN
+        UserTable u ON u.userID = s.StuID
+    JOIN
+        Class c ON s.ClassID = c.ClassID
+    JOIN
+        Semester sem ON c.SemesterID = sem.SemesterID
+    WHERE
+        sem.SemesterID = @_in
+    ORDER BY
+        s.Avg_Score DESC;
+END;
+
+CREATE PROCEDURE get_course_enroll(
+  @user_id CHAR(9)
+)
+AS
+BEGIN
+  SELECT c.CourseID
+  FROM Class AS c
+  JOIN Study AS s ON s.ClassID = c.ClassID
+  WHERE s.StuID = @user_id
+  ORDER BY c.CourseID ASC;
+END;
+
+DROP TABLE IF EXISTS #highest_scores;
+CREATE TABLE #highest_scores (
+    StuID INT, 
+    TestID INT,
+    Score INT
 CREATE TABLE HighestScore(
   StuID VARCHAR(9),
   TestID INT,
   TimesID INT,
   Score INT
 );
+INSERT INTO #highest_scores (StuID, TestID, Score)
+SELECT S.StuID, T.TestID, MAX(S.Score)
+FROM StuWork AS S
+INNER JOIN Test AS T ON T.TestID = S.TestID
+GROUP BY S.StuID, T.TestID;
 
-INSERT INTO HighestScore (StuID, TestID, TimesID, Score)
-SELECT
-  s.StuID,
-  s.TestID,
-  s.TimesID,
-  s.Score
-FROM StuWork s
-INNER JOIN (
-  SELECT StuID, TestID, MAX(Score) AS MaxScore
-  FROM StuWork
-  GROUP BY StuID, TestID  -- Only group by StuID and TestID here
-) max_scores
-ON s.StuID = max_scores.StuID
-AND s.TestID = max_scores.TestID
-AND s.Score = max_scores.MaxScore;
+DROP TABLE IF EXISTS #tests_to_mark_columns;
+CREATE TABLE #tests_to_mark_columns (
+    TestID INT, 
+    CourseID INT,
+    Percentage INT
+);
+INSERT INTO #tests_to_mark_columns (TestID, CourseID)
+SELECT T.TestID, MC.CourseID
+FROM Test AS T
+INNER JOIN Class AS C ON T.ClassID = C.ClassID
+INNER JOIN MarkColumns AS MC ON C.CourseID = MC.CourseID;
 
 
-/*
-DELIMITER //
+DROP TRIGGER IF EXISTS update_avg_score;
 CREATE TRIGGER update_avg_score
 ON Study
 AFTER INSERT, DELETE, UPDATE
-FOR EACH ROW
+AS
 BEGIN
-  DECLARE v_avg_score DOUBLE;
-  DECLARE v_percentage INTEGER;
-
-  SELECT MarkColumns.Percentage
-  INTO v_percentage
-  FROM HighestScore hs
-  JOIN Test t ON hs.TestID = t.TestID
-  JOIN Class c ON t.ClassID = c.ClassID
-  JOIN Course crs ON c.CourseID = crs.CourseID
-  JOIN MarkColumns mc ON crs.CourseID = mc.CourseID
-
-  SELECT SUM(StuWork.Score * v_percentage / 100)
-  INTO v_avg_score
-  FROM StuWork
-
-  UPDATE Study
-  SET Avg_Score = v_avg_score
-;
+  DECLARE @StuID INT;
+  SELECT @StuID = inserted.StuID FROM inserted;
+  UPDATE highest_scores
+  SET avg_score = (SELECT SUM(hs.Score * TMC.Percentage / 100)
+                   FROM highest_scores AS hs
+                   INNER JOIN tests_to_mark_columns AS TMC ON hs.TestID = TMC.TestID
+                   WHERE hs.StuID = @StuID
+                   GROUP BY hs.StuID)
+  WHERE StuID = @StuID;
 END;
-//
-DELIMITER ;
-*/
 
--- Ham update AvgScore
--- Xac dinh diem 
--- TRUNCATE TABLE FinalScore;
--- INSERT INTO FinalScore (StuID, TestID, TimesID, Score)
--- SELECT
---   s.StuID,
---   s.TestID,
---   s.TimesID,
---   s.Score
--- FROM StuWork s
--- INNER JOIN (
---   SELECT StuID, TestID, MAX(Score) AS MaxScore
---   FROM StuWork
---   GROUP BY StuID, TestID  -- Only group by StuID and TestID here
--- ) max_scores
--- ON s.StuID = max_scores.StuID
--- AND s.TestID = max_scores.TestID
--- AND s.Score = max_scores.MaxScore;
+CREATE OR ALTER TRIGGER check_add_user
+ON UserTable
+INSTEAD OF INSERT
+AS
+BEGIN
+    DECLARE @ErrorMessage NVARCHAR(100)
+	
+    IF NOT EXISTS (SELECT 1 FROM INSERTED WHERE INSERTED.sex LIKE 'Male' OR INSERTED.sex LIKE 'Female')
+    BEGIN
+        SET @ErrorMessage = 'Gioi tinh khong hop le'
+        RAISERROR (@ErrorMessage, 16, 1)
+        RETURN
+    END
+	
+    IF NOT EXISTS (SELECT 1 FROM INSERTED WHERE INSERTED.mail LIKE '%@hcmut.edu.vn')
+    BEGIN
+        SET @ErrorMessage = 'Email khong hop le'
+        RAISERROR (@ErrorMessage, 16, 1)
+        RETURN
+    END
 
--- WITH WeightedScores AS (
---   SELECT
---     Fs.StuID,
---     c.ClassID,
---     SUM(Fs.Score * Mc.Percentage) / 100 AS Avg_Score
---   FROM FinalScore AS Fs
---   JOIN Test AS t ON Fs.TestID = t.TestID
---   JOIN Class AS c ON t.ClassID = c.ClassID
---   JOIN MarkColumns AS mc ON c.CourseID = mc.CourseID AND t.MarkName = mc.MarkName
---   GROUP BY Fs.StuID, c.ClassID
--- )
--- UPDATE s
--- SET Avg_Score = WeightedScores.Avg_Score
--- FROM Study AS s
--- INNER JOIN WeightedScores ON s.StuID = WeightedScores.StuID AND s.ClassID = WeightedScores.ClassID;
+    INSERT INTO UserTable (Sex, mail)
+    SELECT INSERTED.sex, INSERTED.mail FROM INSERTED
+END
+
+CREATE PROCEDURE check_student_submission_count
+(
+  @student_id CHAR(9)
+)
+AS
+BEGIN
+  DECLARE @submission_count INT
+  DECLARE submission_cursor CURSOR FOR
+    SELECT COUNT(*) AS submission_count
+    FROM StuWork AS sw
+    WHERE sw.StuID = @student_id;
+
+  OPEN submission_cursor;
+  FETCH NEXT FROM submission_cursor INTO @submission_count;
+  CLOSE submission_cursor;
+  DEALLOCATE submission_cursor;
+
+  IF @submission_count IS NULL
+  BEGIN
+    SELECT 'Sinh viên này chưa nộp bài'
+  END
+  ELSE
+  BEGIN
+    SELECT CONCAT('Sinh viên này đã nộp ', @submission_count, ' bài')
+  END;
+END;
 
 insert into UserTable (userID, mail, name, DoB, sex) values ('GV01', 'lbaldick0@hcmut.edu.vn', 'Libbie Baldick', '28-08-2003', 'Female');
 insert into UserTable (userID, mail, name, DoB, sex) values ('GV02', 'dhartegan1@hcmut.edu.vn', 'Devy Hartegan', '17-12-2004', 'Male');
