@@ -129,7 +129,7 @@ CREATE TABLE StuWork (
   StuWork VARCHAR(255),
   DoTime TIME,
   DoneTime DATE,
-  Score INTEGER
+  Score 
 );
 
 --- Continues ---
@@ -158,31 +158,6 @@ BEGIN
         ) s ON c.ClassID = s.ClassID;
     END
 END;
-
-/*
-CREATE TABLE IF NOT EXISTS HighestScore(
-  StuID INT,
-  TestID INT,
-  TimesID INT,
-  Score INT
-);
-
-INSERT INTO HighestScore (StuID, TestID, TimesID, Score)
-SELECT
-  s.StuID,
-  s.TestID,
-  s.TimesID,
-  s.Score
-FROM StuWork s
-INNER JOIN (
-  SELECT StuID, TestID, MAX(Score) AS MaxScore
-  FROM StuWork
-  GROUP BY StuID, TestID  -- Only group by StuID and TestID here
-) max_scores
-ON s.StuID = max_scores.StuID
-AND s.TestID = max_scores.TestID
-AND s.Score = max_scores.MaxScore;
-*/
 
 /*
 DELIMITER //
