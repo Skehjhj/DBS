@@ -182,11 +182,6 @@ BEGIN
         s.Avg_Score DESC;
 END;
 
-
---AI Gen 1 số code só j tham khảo
-
-
---xem 1 học sinh đk môn gì--
 CREATE PROCEDURE get_course_enroll(
   @user_id CHAR(9)
 )
@@ -241,45 +236,30 @@ BEGIN
   WHERE StuID = @StuID;
 END;
 
-/*
-IF EXISTS (SELECT * FROM sys.procedures WHERE object_id = OBJECT_ID(N'add_user'))
-BEGIN
-  DROP PROCEDURE add_user;
-END
-GO
-
-CREATE PROCEDURE add_user
-(
-  @userID CHAR(9),
-  @name VARCHAR(255),
-  @mail VARCHAR(255),
-  @DoB DATE,
-  @Sex VARCHAR(10),
-  @password VARCHAR(255)
-)
+CREATE OR ALTER TRIGGER check_add_user
+ON UserTable
+INSTEAD OF INSERT
 AS
 BEGIN
-  IF @Sex NOT IN ('Male', 'Female')
-  BEGIN
-    SELECT 'Gioi tinh khong hop le' AS ErrorMessage;
-    RETURN;
-  END
+    DECLARE @ErrorMessage NVARCHAR(100)
+	
+    IF NOT EXISTS (SELECT 1 FROM INSERTED WHERE INSERTED.sex LIKE 'Male' OR INSERTED.sex LIKE 'Female')
+    BEGIN
+        SET @ErrorMessage = 'Gioi tinh khong hop le'
+        RAISERROR (@ErrorMessage, 16, 1)
+        RETURN
+    END
+	
+    IF NOT EXISTS (SELECT 1 FROM INSERTED WHERE INSERTED.mail LIKE '%@hcmut.edu.vn')
+    BEGIN
+        SET @ErrorMessage = 'Email khong hop le'
+        RAISERROR (@ErrorMessage, 16, 1)
+        RETURN
+    END
 
-  DECLARE @check_mail BIT;
-  SET @check_mail = IIF(LOCATE('@hcmut.edu.vn', @mail) > 0, 1, 0);
-
-  IF @check_mail != 1
-  BEGIN
-    SELECT 'Email khong hop le' AS ErrorMessage;
-    RETURN;
-  END
-
-  INSERT INTO UserTable (userID, name, mail, DoB, Sex, password)
-  VALUES (@userID, @name, @mail, @DoB, @Sex, @password);
-END;
-GO
-*/
---kiểm tra sv nộp bài chưa--
+    INSERT INTO UserTable (Sex, mail)
+    SELECT INSERTED.sex, INSERTED.mail FROM INSERTED
+END
 
 CREATE PROCEDURE check_student_submission_count
 (
