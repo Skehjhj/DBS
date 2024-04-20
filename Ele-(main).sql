@@ -37,14 +37,14 @@ CREATE TABLE Receiver(
   ReceiveTime DATE
 )
 
-CREATE      TABLE       Professor (
+CREATE TABLE Professor (
   ProfID    VARCHAR(9)    PRIMARY KEY,
   CONSTRAINT   fk_prof_user_ProfID   FOREIGN KEY
                             (ProfID) REFERENCES UserTable (userID),
   Degree      VARCHAR(255),
 );
 
-CREATE      TABLE       Student (
+CREATE TABLE Student (
   StuID    VARCHAR(9)     PRIMARY KEY,
   CONSTRAINT   fk_stu_user_StuID   FOREIGN KEY
                             (StuID) REFERENCES UserTable (userID),
@@ -59,7 +59,7 @@ CREATE TABLE Semester(
     EndDate DATE,
 );
 
-CREATE      TABLE       Course (
+CREATE TABLE Course (
   CourseID  CHAR(6)     PRIMARY KEY,
   Name      VARCHAR(255),
   Credit     INTEGER,
@@ -73,7 +73,7 @@ CREATE TABLE MarkColumns(
   Percentage INTEGER,
 );
 
-CREATE      TABLE      Class (
+CREATE TABLE Class (
   ClassID    INTEGER     PRIMARY KEY,
   SemesterID INTEGER,
   CONSTRAINT fk_class_semester_SemesterID FOREIGN KEY (SemesterID) REFERENCES Semester (SemesterID),
@@ -159,9 +159,8 @@ BEGIN
     END
 END;
 
-/*
-CREATE TABLE IF NOT EXISTS HighestScore(
-  StuID INT,
+CREATE TABLE HighestScore(
+  StuID VARCHAR(9),
   TestID INT,
   TimesID INT,
   Score INT
@@ -182,7 +181,7 @@ INNER JOIN (
 ON s.StuID = max_scores.StuID
 AND s.TestID = max_scores.TestID
 AND s.Score = max_scores.MaxScore;
-*/
+
 
 /*
 DELIMITER //
@@ -196,7 +195,7 @@ BEGIN
 
   SELECT MarkColumns.Percentage
   INTO v_percentage
-  FROM HighestScores hs
+  FROM HighestScore hs
   JOIN Test t ON hs.TestID = t.TestID
   JOIN Class c ON t.ClassID = c.ClassID
   JOIN Course crs ON c.CourseID = crs.CourseID
@@ -213,6 +212,41 @@ END;
 //
 DELIMITER ;
 */
+
+-- Ham update AvgScore
+-- Xac dinh diem 
+-- TRUNCATE TABLE FinalScore;
+-- INSERT INTO FinalScore (StuID, TestID, TimesID, Score)
+-- SELECT
+--   s.StuID,
+--   s.TestID,
+--   s.TimesID,
+--   s.Score
+-- FROM StuWork s
+-- INNER JOIN (
+--   SELECT StuID, TestID, MAX(Score) AS MaxScore
+--   FROM StuWork
+--   GROUP BY StuID, TestID  -- Only group by StuID and TestID here
+-- ) max_scores
+-- ON s.StuID = max_scores.StuID
+-- AND s.TestID = max_scores.TestID
+-- AND s.Score = max_scores.MaxScore;
+
+-- WITH WeightedScores AS (
+--   SELECT
+--     Fs.StuID,
+--     c.ClassID,
+--     SUM(Fs.Score * Mc.Percentage) / 100 AS Avg_Score
+--   FROM FinalScore AS Fs
+--   JOIN Test AS t ON Fs.TestID = t.TestID
+--   JOIN Class AS c ON t.ClassID = c.ClassID
+--   JOIN MarkColumns AS mc ON c.CourseID = mc.CourseID AND t.MarkName = mc.MarkName
+--   GROUP BY Fs.StuID, c.ClassID
+-- )
+-- UPDATE s
+-- SET Avg_Score = WeightedScores.Avg_Score
+-- FROM Study AS s
+-- INNER JOIN WeightedScores ON s.StuID = WeightedScores.StuID AND s.ClassID = WeightedScores.ClassID;
 
 insert into UserTable (userID, mail, name, DoB, sex) values ('GV01', 'lbaldick0@hcmut.edu.vn', 'Libbie Baldick', '28-08-2003', 'Female');
 insert into UserTable (userID, mail, name, DoB, sex) values ('GV02', 'dhartegan1@hcmut.edu.vn', 'Devy Hartegan', '17-12-2004', 'Male');
@@ -443,3 +477,21 @@ insert into Study (StuID, ClassID) values ('SV04', 12);
 insert into Study (StuID, ClassID) values ('SV06', 4);
 insert into Study (StuID, ClassID) values ('SV01', 8);
 insert into Study (StuID, ClassID) values ('SV10', 11);
+
+insert into MarkColumns (CourseID, MarkName, Percentage) values ('ART606', 'Tutorial', 10);
+insert into MarkColumns (CourseID, MarkName, Percentage) values ('ART606', 'Labs', 20);
+insert into MarkColumns (CourseID, MarkName, Percentage) values ('ART606', 'Midterm', 30);
+insert into MarkColumns (CourseID, MarkName, Percentage) values ('ART606', 'Final', 40);
+insert into MarkColumns (CourseID, MarkName, Percentage) values ('BUS707', 'Labs', 20);
+insert into MarkColumns (CourseID, MarkName, Percentage) values ('BUS707', 'Final', 80);
+insert into MarkColumns (CourseID, MarkName, Percentage) values ('CHE101', 'Final', 100);
+insert into MarkColumns (CourseID, MarkName, Percentage) values ('CSE101', 'Final', 100);
+insert into MarkColumns (CourseID, MarkName, Percentage) values ('ENG303', 'Final', 100);
+insert into MarkColumns (CourseID, MarkName, Percentage) values ('HIS404', 'Final', 100);
+insert into MarkColumns (CourseID, MarkName, Percentage) values ('MAT202', 'Tutorial', 20);
+insert into MarkColumns (CourseID, MarkName, Percentage) values ('MAT202', 'Midterm', 40);
+insert into MarkColumns (CourseID, MarkName, Percentage) values ('MAT202', 'Final', 40);
+insert into MarkColumns (CourseID, MarkName, Percentage) values ('MUS909', 'Final', 100);
+insert into MarkColumns (CourseID, MarkName, Percentage) values ('PHI808', 'Midterm', 50);
+insert into MarkColumns (CourseID, MarkName, Percentage) values ('PHI808', 'Final', 50);
+insert into MarkColumns (CourseID, MarkName, Percentage) values ('SCI505', 'Final', 100);
