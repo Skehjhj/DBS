@@ -239,6 +239,31 @@ BEGIN
     JOIN WeightedScores ON s.StuID = WeightedScores.StuID AND s.ClassID = WeightedScores.ClassID;
 END;
 
+CREATE OR ALTER TRIGGER check_add_user
+ON UserTable
+INSTEAD OF INSERT
+AS
+BEGIN
+    DECLARE @ErrorMessage NVARCHAR(100)
+	
+    IF NOT EXISTS (SELECT 1 FROM INSERTED WHERE INSERTED.sex LIKE 'Male' OR INSERTED.sex LIKE 'Female')
+    BEGIN
+        SET @ErrorMessage = 'Gioi tinh khong hop le'
+        RAISERROR (@ErrorMessage, 16, 1)
+        RETURN
+    END
+	
+    IF NOT EXISTS (SELECT 1 FROM INSERTED WHERE INSERTED.mail LIKE '%@hcmut.edu.vn')
+    BEGIN
+        SET @ErrorMessage = 'Email khong hop le'
+        RAISERROR (@ErrorMessage, 16, 1)
+        RETURN
+    END
+
+    INSERT INTO UserTable (Sex, mail)
+    SELECT INSERTED.sex, INSERTED.mail FROM INSERTED
+END
+
 CREATE PROCEDURE check_student_submission_count
 (
   @student_id CHAR(9)
