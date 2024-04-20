@@ -194,51 +194,49 @@ BEGIN
   ORDER BY c.CourseID ASC;
 END;
 
-DROP TABLE IF EXISTS #highest_scores;
-CREATE TABLE #highest_scores (
-    StuID INT, 
-    TestID INT,
-    Score INT
-CREATE TABLE HighestScore(
-  StuID VARCHAR(9),
-  TestID INT,
-  TimesID INT,
-  Score INT
-);
-INSERT INTO #highest_scores (StuID, TestID, Score)
-SELECT S.StuID, T.TestID, MAX(S.Score)
-FROM StuWork AS S
-INNER JOIN Test AS T ON T.TestID = S.TestID
-GROUP BY S.StuID, T.TestID;
-
-DROP TABLE IF EXISTS #tests_to_mark_columns;
-CREATE TABLE #tests_to_mark_columns (
-    TestID INT, 
-    CourseID INT,
-    Percentage INT
-);
-INSERT INTO #tests_to_mark_columns (TestID, CourseID)
-SELECT T.TestID, MC.CourseID
-FROM Test AS T
-INNER JOIN Class AS C ON T.ClassID = C.ClassID
-INNER JOIN MarkColumns AS MC ON C.CourseID = MC.CourseID;
-
-
-DROP TRIGGER IF EXISTS update_avg_score;
-CREATE TRIGGER update_avg_score
-ON Study
-AFTER INSERT, DELETE, UPDATE
+CREATE TRIGGER trg_UpdateFinalScore
+ON StuWork
+AFTER INSERT
 AS
 BEGIN
-  DECLARE @StuID INT;
-  SELECT @StuID = inserted.StuID FROM inserted;
-  UPDATE highest_scores
-  SET avg_score = (SELECT SUM(hs.Score * TMC.Percentage / 100)
-                   FROM highest_scores AS hs
-                   INNER JOIN tests_to_mark_columns AS TMC ON hs.TestID = TMC.TestID
-                   WHERE hs.StuID = @StuID
-                   GROUP BY hs.StuID)
-  WHERE StuID = @StuID;
+    -- Delete existing records from FinalScore table for the student and test
+    DELETE FROM FinalScore WHERE StuID = (SELECT StuID FROM inserted) AND TestID = (SELECT TestID FROM inserted);
+
+    -- Insert the maximum score for the student and test into FinalScore table
+    INSERT INTO FinalScore (StuID, TestID, TimesID, Score)
+    SELECT
+        s.StuID,
+        s.TestID,
+        s.TimesID,
+        s.Score
+    FROM StuWork s
+    INNER JOIN (
+        SELECT StuID, TestID, MAX(Score) AS MaxScore
+        FROM StuWork
+        WHERE StuID = (SELECT StuID FROM inserted) AND TestID = (SELECT TestID FROM inserted)
+        GROUP BY StuID, TestID
+    ) max_scores
+    ON s.StuID = max_scores.StuID
+    AND s.TestID = max_scores.TestID
+    AND s.Score = max_scores.MaxScore;
+
+    -- Calculate weighted average scores for each student in each class
+    WITH WeightedScores AS (
+        SELECT
+            Fs.StuID,
+            c.ClassID,
+            SUM(Fs.Score * Mc.Percentage) / 100 AS Avg_Score
+        FROM FinalScore AS Fs
+        JOIN Test AS t ON Fs.TestID = t.TestID
+        JOIN Class AS c ON t.ClassID = c.ClassID
+        JOIN MarkColumns AS mc ON c.CourseID = mc.CourseID AND t.MarkName = mc.MarkName
+        GROUP BY Fs.StuID, c.ClassID
+    )
+    -- Update the average score in the Study table for the student in each class
+    UPDATE s
+    SET Avg_Score = WeightedScores.Avg_Score
+    FROM Study AS s
+    JOIN WeightedScores ON s.StuID = WeightedScores.StuID AND s.ClassID = WeightedScores.ClassID;
 END;
 
 CREATE OR ALTER TRIGGER check_add_user
