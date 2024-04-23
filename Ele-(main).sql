@@ -165,8 +165,8 @@ BEGIN
     END
 END;
 
-DROP PROCEDURE IF EXISTS arange_student_on_score;
-CREATE PROCEDURE arange_student_on_score
+DROP PROCEDURE IF EXISTS arrange_student_on_score;
+CREATE PROCEDURE arrange_student_on_score
 	@_in INT
 AS
 BEGIN
