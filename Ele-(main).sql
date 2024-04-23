@@ -293,9 +293,7 @@ BEGIN
   END;
 END;
 
---create funtion that arange all class that a professor teach arange from highest average score to lowest
-CREATE OR ALTER FUNCTION ArrangeClassByAvgScore(@profID VARCHAR(9), @courseID CHAR(6))
-RETURNS TABLE
+CREATE OR ALTER PROCEDURE ArrangeClassByAvgScore(@profID VARCHAR(9), @courseID CHAR(6))
 AS
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM Class 
@@ -304,43 +302,89 @@ BEGIN
         SELECT 'Giao vien khong day mon nay'
     END
 END
-SELECT ClassID, Classroom, AVG(Avg_Score) AS Avg_Score
+SELECT s.ClassID, c.Classroom, AVG(Avg_Score) AS Avg_Score
 FROM Study s
 JOIN Class c ON s.ClassID = c.ClassID
 WHERE ProfID = @profID
-GROUP BY ClassID
+GROUP BY s.ClassID, c.Classroom
 ORDER BY Avg_Score DESC;
 
---create funtion that get a table of student who finish all the test of a class
-CREATE OR ALTER FUNCTION GetStudentsWithCompletedTest(@classID INT)
-RETURNS TABLE
+CREATE OR ALTER FUNCTION GetStudentSemesterAverageGrade(@StuID VARCHAR(9), @SemesterID INT)
+RETURNS DECIMAL(10,2)
 AS
 BEGIN
-    CREATE TABLE #CompletedTest(
-        StuID VARCHAR(9),
-        name VARCHAR(255)
+    DECLARE @StudentGrades TABLE(
+        CourseID CHAR(6),
+        Avg_Score DECIMAL(10,2)
     );
-    DECLARE @Stu CURSOR FOR
-    SELECT StuID, name FROM Study s JOIN UserTable ut ON s.StuID = us.userID;
 
-    OPEN @Stu;
-    FETCH NEXT FROM @Stu INTO @StuID, @name;
-    WHILE @@FETCH_STATUS = 0
-    BEGIN
-        IF (SELECT COUNT(*) FROM StuWork 
-        WHERE StuID = @StuID AND TestID IN (SELECT TestID FROM Test WHERE ClassID 
-                                              = @classID)) = (SELECT COUNT(*) FROM Test WHERE ClassID = @classID)
-        BEGIN
-            INSERT INTO #CompletedTest(StuID, name) VALUES (@StuID, @name);
-        END;
-    FETCH NEXT FROM @Stu INTO @StuID, @name;
-    END;
-    CLOSE @Stu;
-    SELECT * FROM #CompletedTest;
-    DROP TABLE #CompletedTest;
+    INSERT INTO @StudentGrades
+    SELECT CourseID, Avg_Score
+    FROM Study s JOIN Class c ON s.ClassID = c.ClassID
+    WHERE StuID = @StuID AND SemesterID = @SemesterID;
+
+    DECLARE @AverageGrade DECIMAL(10,2);
+
+    SELECT @AverageGrade = AVG(Avg_Score)
+    FROM @StudentGrades;
+
+    RETURN @AverageGrade;
+END;
+
+SELECT [dbo].[GetStudentSemesterAverageGrade]('SV01', 223);
+
+CREATE OR ALTER PROCEDURE GetStudentsWithCompletedTest (@classID INT)
+AS
+BEGIN
+    SELECT StuID, name
+    INTO #CompletedTest
+    FROM Study s
+    JOIN UserTable ut ON s.StuID = ut.userID AND s.ClassID = @classID
+    WHERE EXISTS (SELECT 1 FROM StuWork sw
+                  JOIN Test t ON sw.TestID = t.TestID
+                  WHERE t.ClassID = @classID AND sw.StuID = s.StuID
+                  GROUP BY sw.StuID
+                  HAVING COUNT(*) = (SELECT COUNT(*) FROM Test WHERE ClassID = @classID))
+	SELECT * FROM #CompletedTest
+	DROP TABLE #CompletedTest
 END;
 
 SELECT * FROM GetStudentsWithCompletedTest(1);
+
+CREATE FUNCTION CountStudentsAboveScore(@ScoreIN DECIMAL(10,2), @ClassID INT)
+RETURNS INT
+AS
+BEGIN
+IF (@ScoreIN > 10)
+    BEGIN
+		RETURN NULL;
+    END;
+  DECLARE @Count INT = 0;
+	DECLARE @Score DECIMAL(10,2);
+    DECLARE myCursor CURSOR FOR
+        SELECT Avg_Score
+        FROM Study
+        WHERE ClassID = @ClassID;
+
+    OPEN myCursor;
+
+    FETCH NEXT FROM myCursor INTO @Score;
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        IF @Score > @ScoreIN
+        BEGIN
+            SET @Count = @Count + 1;
+        END
+
+        FETCH NEXT FROM myCursor INTO @Score;
+    END;
+
+    CLOSE myCursor;
+    DEALLOCATE myCursor;
+
+    RETURN @Count;
+END;
 
 insert into UserTable (userID, mail, name, DoB, sex) values ('GV01', 'lbaldick0@hcmut.edu.vn', 'Libbie Baldick', '28-08-2003', 'Female');
 insert into UserTable (userID, mail, name, DoB, sex) values ('GV02', 'dhartegan1@hcmut.edu.vn', 'Devy Hartegan', '17-12-2004', 'Male');
