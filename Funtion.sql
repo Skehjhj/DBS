@@ -1,48 +1,3 @@
-DROP PROCEDURE IF EXISTS arange_student_on_score;
-DELIMITER $$
-CREATE PROCEDURE arange_student_on_score(
-  IN input_semester_id INT
-)
-BEGIN 
-
-SELECT
-    s.StuID,
-    s.Avg_Score,
-    s.name
-FROM
-    Study s
-JOIN
-    UserTable u ON u.userID = s.StuID
-JOIN
-    Class c ON s.ClassID = c.ClassID
-JOIN
-    Semester sem ON c.SemesterID = sem.SemesterID
-WHERE
-    sem.SemesterID = @input_semester_id
-ORDER BY
-    s.Avg_Score DESC;
-END;
-
-DELIMITER ;
-
-
---AI Gen 1 số code só j tham khảo
-
-
---xem 1 học sinh đk môn gì--
-DELIMITER $$
-CREATE PROCEDURE get_course_enroll(
-  @user_id CHAR(9)
-)
-BEGIN
-  SELECT c.CourseID
-  FROM Class AS c
-  JOIN Study AS s ON s.ClassID = c.ClassID
-  WHERE s.StuID = @user_id
-  ORDER BY c.CourseID ASC;
-END $$
-DELIMITER ;
-
 DROP TABLE IF EXISTS highest_scores;
 CREATE TEMPORARY TABLE highest_scores (
     StuID INT, 
@@ -91,59 +46,6 @@ BEGIN
 END//
 DELIMITER ;
 
-DROP PROCEDURE IF EXISTS add_user;
-DELIMITER //
-CREATE PROCEDURE add_user(
-  IN userID CHAR(9),
-  IN name VARCHAR(255),
-  IN mail VARCHAR(255),
-  IN DoB DATE,
-  IN Sex VARCHAR(10),
-  IN password VARCHAR(255)
-)
-BEGIN
-  IF Sex NOT IN ('Male', 'Female') THEN
-  SELECT 'Gioi tinh khong hop le';
-  END IF;
 
-  DECLARE check_mail BOOLEAN;
-  SET check_mail = LOCATE('@hcmut.edu.vn', mail) > 0;
-
-  IF check_mail != 1 THEN
-  SELECT 'Email khong hop le';
-  END IF;
-
-  INSERT INTO UserTable (userID, name, mail, DoB, Sex, password)
-  VALUES (userID, name, mail, DoB, Sex, password);
-END //
-DELIMITER ;
-
---kiểm tra sv nộp bài chưa--
-DELIMITER $$
-
-CREATE PROCEDURE check_student_submission_count(
-  @student_id CHAR(9)
-)
-BEGIN
-
-  DECLARE submission_count INT;
-  DECLARE submission_cursor CURSOR FOR
-    SELECT COUNT(*) AS submission_count
-    FROM StuWork AS sw
-    WHERE sw.student_id = @student_id;
-
-  OPEN submission_cursor;
-  FETCH submission_cursor INTO @submission_count;
-  CLOSE submission_cursor;
-
-  IF @submission_count IS NULL THEN
-    SELECT 'Sinh viên này chưa nộp bài';
-  ELSE
-    SELECT CONCAT('Sinh viên này đã nộp ', @submission_count, ' bài');
-  END IF;
-
-END $$
-
-DELIMITER ;
 
 

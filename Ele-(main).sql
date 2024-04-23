@@ -9,9 +9,8 @@ CREATE      TABLE       UserTable (
   name      VARCHAR(255),
   DoB       DATE,
   sex       VARCHAR(10),
-  password  VARCHAR(10),
+  password  VARCHAR(10)
 );
-
 
 ALTER TABLE UserTable
 ADD CONSTRAINT CK_Sex
@@ -189,8 +188,8 @@ BEGIN
         s.Avg_Score DESC;
 END;
 
-CREATE PROCEDURE get_course_enroll(
-  @user_id CHAR(9)
+CREATE OR ALTER PROCEDURE get_course_enroll(
+  @user_id VARCHAR(9)
 )
 AS
 BEGIN
@@ -201,15 +200,12 @@ BEGIN
   ORDER BY c.CourseID ASC;
 END;
 
-CREATE TRIGGER trg_UpdateFinalScore
+CREATE OR ALTER TRIGGER trg_UpdateFinalScore
 ON StuWork
 AFTER INSERT
 AS
 BEGIN
-    -- Delete existing records from FinalScore table for the student and test
     DELETE FROM FinalScore WHERE StuID = (SELECT StuID FROM inserted) AND TestID = (SELECT TestID FROM inserted);
-
-    -- Insert the maximum score for the student and test into FinalScore table
     INSERT INTO FinalScore (StuID, TestID, TimesID, Score)
     SELECT
         s.StuID,
@@ -227,19 +223,17 @@ BEGIN
     AND s.TestID = max_scores.TestID
     AND s.Score = max_scores.MaxScore;
 
-    -- Calculate weighted average scores for each student in each class
     WITH WeightedScores AS (
         SELECT
             Fs.StuID,
             c.ClassID,
-            SUM(Fs.Score * Mc.Percentage) / 100 AS Avg_Score
+            COALESCE(SUM(Fs.Score * Mc.Percentage), 0) / 100 AS Avg_Score
         FROM FinalScore AS Fs
         JOIN Test AS t ON Fs.TestID = t.TestID
         JOIN Class AS c ON t.ClassID = c.ClassID
         JOIN MarkColumns AS mc ON c.CourseID = mc.CourseID AND t.MarkName = mc.MarkName
         GROUP BY Fs.StuID, c.ClassID
     )
-    -- Update the average score in the Study table for the student in each class
     UPDATE s
     SET Avg_Score = WeightedScores.Avg_Score
     FROM Study AS s
@@ -267,13 +261,14 @@ BEGIN
         RETURN
     END
 
-    INSERT INTO UserTable (Sex, mail)
-    SELECT INSERTED.sex, INSERTED.mail FROM INSERTED
+    INSERT INTO UserTable (userID, mail, name, DoB, sex, password)
+    SELECT INSERTED.userID, INSERTED.mail, INSERTED.name, INSERTED.DoB, INSERTED.sex, INSERTED.password FROM INSERTED
 END
 
-CREATE PROCEDURE check_student_submission_count
+
+CREATE OR ALTER PROCEDURE check_student_submission_count
 (
-  @student_id CHAR(9)
+  @student_id VARCHAR(9)
 )
 AS
 BEGIN
@@ -290,11 +285,11 @@ BEGIN
 
   IF @submission_count IS NULL
   BEGIN
-    SELECT 'Sinh viên này chưa nộp bài'
+    SELECT 'Sinh vien chua nop bai nao'
   END
   ELSE
   BEGIN
-    SELECT CONCAT('Sinh viên này đã nộp ', @submission_count, ' bài')
+    SELECT CONCAT('Sinh vien da nop ', @submission_count, ' bai')
   END;
 END;
 
@@ -314,8 +309,13 @@ insert into UserTable (userID, mail, name, DoB, sex) values ('SV08', 'olampardh@
 insert into UserTable (userID, mail, name, DoB, sex) values ('SV09', 'rroxburghi@hcmut.edu.vn', 'Rinaldo Roxburgh', '11-10-2003', 'Male');
 insert into UserTable (userID, mail, name, DoB, sex) values ('SV10', 'abusainj@hcmut.edu.vn', 'Amandy Busain', '17-07-2000', 'Female');
 
+insert into UserTable (userID, mail, name, DoB, sex) values ('SV11', 'abusaij@hcmut.edu.vn', 'Amand Busain', '17-06-2000', 'Female');
+insert into UserTable (userID, mail, name, DoB, sex) values ('SV12', 'abusai@hcmut.edu.vn', 'Amand Busai', '17-06-2000', 'Female');
+
 UPDATE UserTable
 SET password = '1234567';
+
+UPDATE
 
 insert into Message (MessageID, Content, SenderID) values (1, 'Cras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque.', 'GV01');
 insert into Message (MessageID, Content, SenderID) values (2, 'Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem.', 'SV01');
@@ -350,6 +350,8 @@ insert into Student (StuID, DateJoin, Major, Program) values ('SV08', '16/09/201
 insert into Student (StuID, DateJoin, Major, Program) values ('SV09', '10/06/2022', 'Mathematics', 'DT');
 insert into Student (StuID, DateJoin, Major, Program) values ('SV10', '22/07/2020', 'Computer Science', 'VHVL');
 
+insert into Student (StuID, DateJoin, Major, Program) values ('SV11', '10/06/2022', 'Mathematics', 'DT');
+insert into Student (StuID, DateJoin, Major, Program) values ('SV12', '10/06/2022', 'Mathematics', 'DT');
 
 insert into Semester (SemesterID, StartDate, EndDate) values (211, '05-09-2011', '31-12-2011');
 insert into Semester (SemesterID, StartDate, EndDate) values (212, '01-01-2022', '21-06-2022');
@@ -369,11 +371,11 @@ INSERT INTO Course (CourseID, Name, Credit, Prerequisites) VALUES ('SCI505', N'H
 INSERT INTO Course (CourseID, Name, Credit, Prerequisites) VALUES ('HIS404', N'Creative Writing Workshop', 2, 'SCI505');
 INSERT INTO Course (CourseID, Name, Credit, Prerequisites) VALUES ('MUS909', N'Introduction to Computer Science', 4, 'CHE101');
 
-insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (1, 223, 'L01', 'ART606', 'GV10');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (1, 223, 'L01', 'ART606', 'GV01');
 insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (2, 211, 'L02', 'CHE101', 'GV03');
-insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (3, 212, 'L03', 'BUS707', 'GV09');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (3, 212, 'L03', 'BUS707', 'GV02');
 insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (4, 211, 'L04', 'SCI505', 'GV03');
-insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (5, 213, 'L05', 'MAT202', 'GV09');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (5, 213, 'L05', 'MAT202', 'GV04');
 
 
 insert into Document (DocID, DocName, DocType, Docpath, ClassID, Author) values (1, 'Proposal_2021', 'Newsletter', 'https://hud.gov', 1, 'Wenona');
@@ -394,10 +396,10 @@ insert into QuizBank (QuizID, Context, Answer) values (9, 'Cras non velit nec ni
 insert into QuizBank (QuizID, Context, Answer) values (10, 'Quisque id justo sit amet', 'D');
 
 
-INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (1, 1, N'2024-02-18 00:00:00.000', N'Test4', N'Final');
-INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (2, 1, N'2024-01-10 00:00:00.000', N'Test1', N'Labs');
-INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (3, 1, N'2023-07-06 00:00:00.000', N'Test2', N'Midterm');
-INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (4, 1, N'2023-10-24 00:00:00.000', N'Test5', N'Tutorial');
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (1, 1, '2024-18-02 00:00:00.000', N'Test4', N'Final');
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (2, 1, '2024-01-10 00:00:00.000', N'Test1', N'Labs');
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (3, 1, '2023-07-06 00:00:00.000', N'Test2', N'Midterm');
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (4, 1, '2023-24-10 00:00:00.000', N'Test5', N'Tutorial');
 
 
 INSERT Into TestQuestions(TestID, QuestionID) VALUES (1, 1);
@@ -423,6 +425,17 @@ INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) V
 INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 3, 1, null, null, null, 90);
 INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 4, 1, null, null, null, 100);
 
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV11', 2, 1, null, null, null, 80);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV11', 2, 2, null, null, null, 70);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV11', 1, 1, null, null, null, 50);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV11', 3, 1, null, null, null, 50);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV11', 4, 1, null, null, null, 50);
+
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV12', 2, 1, null, null, null, 80);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV12', 2, 2, null, null, null, 70);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV12', 1, 1, null, null, null, 80);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV12', 3, 1, null, null, null, 50);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV12', 4, 1, null, null, null, 50);
 
 insert into Study (StuID, ClassID) values ('SV01', 1);
 insert into Study (StuID, ClassID) values ('SV02', 1);
@@ -433,7 +446,10 @@ insert into Study (StuID, ClassID) values ('SV01', 2);
 insert into Study (StuID, ClassID) values ('SV02', 3);
 insert into Study (StuID, ClassID) values ('SV03', 4);
 insert into Study (StuID, ClassID) values ('SV04', 5);
+
+insert into Study (StuID, ClassID) values ('SV11', 1);
 insert into Study (StuID, ClassID) values ('SV05', 1);
+insert into Study (StuID, ClassID) values ('SV12', 1);
 
 
 insert into MarkColumns (CourseID, MarkName, Percentage) values ('ART606', 'Tutorial', 10);
@@ -453,3 +469,18 @@ insert into MarkColumns (CourseID, MarkName, Percentage) values ('MUS909', 'Fina
 insert into MarkColumns (CourseID, MarkName, Percentage) values ('PHI808', 'Midterm', 50);
 insert into MarkColumns (CourseID, MarkName, Percentage) values ('PHI808', 'Final', 50);
 insert into MarkColumns (CourseID, MarkName, Percentage) values ('SCI505', 'Final', 100);
+
+
+SELECT Class_size
+FROM Class
+
+SELECT * FROM UserTable
+
+EXECUTE [dbo].[check_student_submission_count]
+    @student_id = 'SV11'
+
+EXECUTE [dbo].[get_course_enroll]
+    @user_id = 'SV01'
+
+EXECUTE [dbo].[arange_student_on_score]
+   @_in = 223
