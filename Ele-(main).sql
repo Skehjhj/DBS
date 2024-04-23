@@ -256,7 +256,7 @@ BEGIN
 	
     IF NOT EXISTS (SELECT 1 FROM INSERTED WHERE INSERTED.mail LIKE '%@hcmut.edu.vn')
     BEGIN
-        SET @ErrorMessage = 'Email khong hop le'
+        SET @ErrorMessage = 'Email khong thuoc Truong DH Bach Khoa'
         RAISERROR (@ErrorMessage, 16, 1)
         RETURN
     END
@@ -292,6 +292,55 @@ BEGIN
     SELECT CONCAT('Sinh vien da nop ', @submission_count, ' bai')
   END;
 END;
+
+--create funtion that arange all class that a professor teach arange from highest average score to lowest
+CREATE OR ALTER FUNCTION ArrangeClassByAvgScore(@profID VARCHAR(9), @courseID CHAR(6))
+RETURNS TABLE
+AS
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM Class 
+               WHERE ProfID = @profID AND CourseID = @courseID)
+    BEGIN
+        SELECT 'Giao vien khong day mon nay'
+    END
+END
+SELECT ClassID, Classroom, AVG(Avg_Score) AS Avg_Score
+FROM Study s
+JOIN Class c ON s.ClassID = c.ClassID
+WHERE ProfID = @profID
+GROUP BY ClassID
+ORDER BY Avg_Score DESC;
+
+--create funtion that get a table of student who finish all the test of a class
+CREATE OR ALTER FUNCTION GetStudentsWithCompletedTest(@classID INT)
+RETURNS TABLE
+AS
+BEGIN
+    CREATE TABLE #CompletedTest(
+        StuID VARCHAR(9),
+        name VARCHAR(255)
+    );
+    DECLARE @Stu CURSOR FOR
+    SELECT StuID, name FROM Study s JOIN UserTable ut ON s.StuID = us.userID;
+
+    OPEN @Stu;
+    FETCH NEXT FROM @Stu INTO @StuID, @name;
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        IF (SELECT COUNT(*) FROM StuWork 
+        WHERE StuID = @StuID AND TestID IN (SELECT TestID FROM Test WHERE ClassID 
+                                              = @classID)) = (SELECT COUNT(*) FROM Test WHERE ClassID = @classID)
+        BEGIN
+            INSERT INTO #CompletedTest(StuID, name) VALUES (@StuID, @name);
+        END;
+    FETCH NEXT FROM @Stu INTO @StuID, @name;
+    END;
+    CLOSE @Stu;
+    SELECT * FROM #CompletedTest;
+    DROP TABLE #CompletedTest;
+END;
+
+SELECT * FROM GetStudentsWithCompletedTest(1);
 
 insert into UserTable (userID, mail, name, DoB, sex) values ('GV01', 'lbaldick0@hcmut.edu.vn', 'Libbie Baldick', '28-08-2003', 'Female');
 insert into UserTable (userID, mail, name, DoB, sex) values ('GV02', 'dhartegan1@hcmut.edu.vn', 'Devy Hartegan', '17-12-2004', 'Male');

@@ -1,50 +1,54 @@
-DROP TABLE IF EXISTS highest_scores;
-CREATE TEMPORARY TABLE highest_scores (
-    StuID INT, 
-    TestID INT,
-    Score INT
-);
-INSERT INTO highest_scores (StuID, TestID, Score)
-SELECT S.StuID, T.TestID, MAX(S.Score)
-FROM Students AS S
-INNER JOIN Tests AS T ON T.TestID = S.TestID
-GROUP BY S.StuID, T.TestID;
 
-DROP TABLE IF EXISTS tests_to_mark_columns;
-CREATE TEMPORARY TABLE tests_to_mark_columns (
-    TestID INT, 
-    CourseID INT,
-    Percentage INT
-);
-INSERT INTO tests_to_mark_columns (TestID, CourseID)
-SELECT T.TestID, MC.CourseID
-FROM Tests AS T
-INNER JOIN Class AS C ON T.ClassID = C.ClassID
-INNER JOIN MarkingColumns AS MC ON C.CourseID = MC.CourseID;
+SELECT fn_CalculateAssignmentCompletionRate(123);
 
---bang
-/*
-SELECT HS.StuID, MC.CourseID
-FROM highest_scores AS HS
-INNER JOIN tests_to_mark_columns AS TMC ON HS.TestID = TMC.TestID
-INNER JOIN MarkColumns AS MC ON TMC.CourseID = MC.CourseID
-WHERE HS.StuID = @user_id;
-*/
-
-DROP TRIGGER IF EXISTS update_avg_score;
-DELIMITER //
-CREATE TRIGGER update_avg_score
-ON Study s
-AFTER INSERT, DELETE, UPDATE
-FOR EACH ROW
+CREATE FUNCTION fn_GetStudentsWithCompletedAssignments(@CourseID INT)
+RETURNS TABLE
+AS
 BEGIN
-  SELECT s.StuID, SUM(hs.Score * TMC.Percentage / 100) AS avg_score
-  FROM highest_scores AS hs
-  INNER JOIN tests_to_mark_columns AS TMC ON hs.TestID = TMC.TestID
-  WHERE hs.StuID = s.StuID
-  GROUP BY s.StuID;
-END//
-DELIMITER ;
+    -- Tạo bảng tạm thời để lưu trữ danh sách học viên
+    CREATE TABLE #CompletedStudents (
+        StudentID INT,
+        FullName NVARCHAR(255)
+    );
+
+    -- Khai báo con trỏ để duyệt qua kết quả truy vấn
+    DECLARE @StudentCursor CURSOR FOR
+        SELECT StudentID, FullName FROM dbo.Students;
+
+    -- Mở con trỏ
+    OPEN @StudentCursor;
+
+    -- Duyệt qua danh sách học viên
+    FETCH NEXT FROM @StudentCursor INTO @StudentID, @FullName;
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        -- Kiểm tra xem học viên đã hoàn thành tất cả bài tập hay chưa
+        IF (SELECT COUNT(*) FROM dbo.StudentAssignments
+            WHERE StudentID = @StudentID AND CourseID = @CourseID AND Status = 'Completed')
+            = (SELECT COUNT(*) FROM dbo.Assignments WHERE CourseID = @CourseID)
+        BEGIN
+            -- Thêm học viên vào bảng tạm thời
+            INSERT INTO #CompletedStudents (StudentID, FullName)
+            VALUES (@StudentID, @FullName);
+        END;
+
+        -- Lấy học viên tiếp theo
+        FETCH NEXT FROM @StudentCursor INTO @StudentID, @FullName;
+    END;
+
+    -- Đóng con trỏ
+    CLOSE @StudentCursor;
+
+    -- Trả về bảng tạm thời chứa danh sách học viên đã hoàn thành
+    SELECT * FROM #CompletedStudents;
+
+    -- Xóa bảng tạm thời
+    DROP TABLE #CompletedStudents;
+END;
+
+
+
+SELECT * FROM fn_GetStudentsWithCompletedAssignments(456);
 
 
 
