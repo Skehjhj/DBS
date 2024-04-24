@@ -147,6 +147,7 @@ CREATE TABLE Study(
     Avg_Score DECIMAL(10,2)
 );
 
+
 CREATE TRIGGER UpdateClassSize
 ON Study
 AFTER INSERT, DELETE, UPDATE
@@ -164,6 +165,7 @@ BEGIN
         ) s ON c.ClassID = s.ClassID;
     END
 END;
+
 
 DROP PROCEDURE IF EXISTS arrange_student_on_score;
 CREATE PROCEDURE arrange_student_on_score
@@ -322,9 +324,7 @@ BEGIN
     SELECT CourseID, Avg_Score
     FROM Study s JOIN Class c ON s.ClassID = c.ClassID
     WHERE StuID = @StuID AND SemesterID = @SemesterID;
-
     DECLARE @AverageGrade DECIMAL(10,2);
-
     SELECT @AverageGrade = AVG(Avg_Score)
     FROM @StudentGrades;
 
@@ -332,6 +332,54 @@ BEGIN
 END;
 
 SELECT [dbo].[GetStudentSemesterAverageGrade]('SV01', 223);
+
+-- Procedure to get 10% student of Semester with condition about Score and Amount of Courses register, 
+-- then get by Scoree first, then with Amount of Courses register
+CREATE PROCEDURE GetScholarshipStudents 
+    @SemesterID NVARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @TotalStudents INT;
+    -- Calculate the total number of distinct students enrolled in the semester
+    SELECT @TotalStudents = COUNT(DISTINCT s.StuID)
+    FROM Study s
+    JOIN Class c ON s.ClassID = c.ClassID
+    WHERE c.SemesterID = @SemesterID;
+
+    WITH StudentStats AS (
+      SELECT
+        s.StuID,
+        [dbo].[GetStudentSemesterAverageGrade](s.StuID, @SemesterID) AS AverageGrade,
+        COUNT(s.StuID) AS CountClass
+      FROM Study s
+      JOIN Class c ON s.ClassID = c.ClassID
+      WHERE c.SemesterID = @SemesterID
+      GROUP BY s.StuID
+    ),
+    QualifiedStudents AS (
+      SELECT
+        StuID,
+        AverageGrade,
+        CountClass
+      FROM StudentStats
+      GROUP BY StuID, AverageGrade, CountClass
+      HAVING AverageGrade > 70
+        AND CountClass >= 3
+    ),
+    TopStudents AS (
+      SELECT
+        *,
+        ROW_NUMBER() OVER (ORDER BY AverageGrade DESC) AS RowNum
+      FROM QualifiedStudents
+    )
+    -- Return the list of students who qualify for the scholarship
+    SELECT StuID, AverageGrade, CountClass, RowNum as Rank
+    FROM TopStudents
+    WHERE RowNum <= CEILING(0.1 * @TotalStudents);
+END;
+
+
 
 CREATE OR ALTER PROCEDURE GetStudentsWithCompletedTest (@classID INT)
 AS
@@ -493,10 +541,15 @@ insert into QuizBank (QuizID, Context, Answer) values (9, 'Cras non velit nec ni
 insert into QuizBank (QuizID, Context, Answer) values (10, 'Quisque id justo sit amet', 'D');
 
 
-INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (1, 1, '2024-18-02 00:00:00.000', N'Test4', N'Final');
-INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (2, 1, '2024-01-10 00:00:00.000', N'Test1', N'Labs');
-INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (3, 1, '2023-07-06 00:00:00.000', N'Test2', N'Midterm');
-INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (4, 1, '2023-24-10 00:00:00.000', N'Test5', N'Tutorial');
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (1, 1, N'2024-02-18 00:00:00.000', N'Test4', N'Final');
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (2, 1, N'2024-01-10 00:00:00.000', N'Test1', N'Labs');
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (3, 1, N'2023-07-06 00:00:00.000', N'Test2', N'Midterm');
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (4, 1, N'2023-10-24 00:00:00.000', N'Test5', N'Tutorial');
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (5, 2, null, N'Test6', N'Final');
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (6, 3, null, N'Test7', N'Final');
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (7, 4, null, N'Oscar', N'Final');
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (8, 5, null, N'Think Essay', N'Midterm');
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (9, 5, null, N'The Aristotle', N'Final');
 
 
 INSERT Into TestQuestions(TestID, QuestionID) VALUES (1, 1);
@@ -512,42 +565,88 @@ INSERT Into TestQuestions(TestID, QuestionID) VALUES (2, 9);
 INSERT Into TestQuestions(TestID, QuestionID) VALUES (2, 1);
 
 INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV01', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 100);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV01', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 90);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV01', 3, 1, N'A', N'10:21:48.0000000', N'2024-04-20', 80);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV01', 4, 1, N'A', N'10:21:49.0000000', N'2024-04-20', 70);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 1, 1, null, null, null, 70);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 1, 2, null, null, null, 100);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 2, 1, null, null, null, 80);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 2, 2, null, null, null, 100);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 3, 1, null, null, null, 90);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 4, 1, null, null, null, 100);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV01', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 100);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 90);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 90);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV03', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 80);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV03', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 80);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV04', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 70);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV04', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 70);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV05', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 60);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV05', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 60);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV06', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 50);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV06', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 50);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV07', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 40);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV07', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 40);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV08', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 30);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV08', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 30);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV09', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 20);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV09', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 20);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV10', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 10);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV10', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 10);
 
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV11', 2, 1, null, null, null, 80);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV11', 2, 2, null, null, null, 70);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV11', 1, 1, null, null, null, 50);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV11', 3, 1, null, null, null, 50);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV11', 4, 1, null, null, null, 50);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV01', 3, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 100);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 3, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 90);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV03', 3, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 80);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV04', 3, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 70);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV05', 3, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 60);
 
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV12', 2, 1, null, null, null, 80);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV12', 2, 2, null, null, null, 70);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV12', 1, 1, null, null, null, 80);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV12', 3, 1, null, null, null, 50);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV12', 4, 1, null, null, null, 50);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV06', 4, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 50);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV07', 4, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 40);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV08', 4, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 30);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV09', 4, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 20);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV10', 4, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 10);
+
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV01', 5, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 100);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 5, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 90);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV03', 5, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 80);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV04', 5, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 70);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV05', 5, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 60);
+
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV06', 6, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 50);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV07', 6, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 50);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV08', 6, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 40);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV09', 6, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 40);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV10', 6, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 30);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV06', 7, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 30);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV07', 7, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 20);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV08', 7, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 20);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV09', 7, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 10);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV10', 7, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 10);
 
 insert into Study (StuID, ClassID) values ('SV01', 1);
 insert into Study (StuID, ClassID) values ('SV02', 1);
 insert into Study (StuID, ClassID) values ('SV03', 1);
 insert into Study (StuID, ClassID) values ('SV04', 1);
 insert into Study (StuID, ClassID) values ('SV05', 1);
+insert into Study (StuID, ClassID) values ('SV06', 1);
+insert into Study (StuID, ClassID) values ('SV07', 1);
+insert into Study (StuID, ClassID) values ('SV08', 1);
+insert into Study (StuID, ClassID) values ('SV09', 1);
+insert into Study (StuID, ClassID) values ('SV10', 1);
+
 insert into Study (StuID, ClassID) values ('SV01', 2);
-insert into Study (StuID, ClassID) values ('SV02', 3);
+insert into Study (StuID, ClassID) values ('SV02', 2);
+insert into Study (StuID, ClassID) values ('SV03', 2);
+insert into Study (StuID, ClassID) values ('SV04', 2);
+insert into Study (StuID, ClassID) values ('SV05', 2);
+insert into Study (StuID, ClassID) values ('SV06', 3);
+insert into Study (StuID, ClassID) values ('SV07', 3);
+insert into Study (StuID, ClassID) values ('SV08', 3);
+insert into Study (StuID, ClassID) values ('SV09', 3);
+insert into Study (StuID, ClassID) values ('SV10', 3);
+
+insert into Study (StuID, ClassID) values ('SV01', 4);
+insert into Study (StuID, ClassID) values ('SV02', 4);
 insert into Study (StuID, ClassID) values ('SV03', 4);
-insert into Study (StuID, ClassID) values ('SV04', 5);
+insert into Study (StuID, ClassID) values ('SV04', 4);
+insert into Study (StuID, ClassID) values ('SV05', 4);
 
-insert into Study (StuID, ClassID) values ('SV11', 1);
-insert into Study (StuID, ClassID) values ('SV05', 1);
-insert into Study (StuID, ClassID) values ('SV12', 1);
-
+insert into Study (StuID, ClassID) values ('SV06', 5);
+insert into Study (StuID, ClassID) values ('SV07', 5);
+insert into Study (StuID, ClassID) values ('SV08', 5);
+insert into Study (StuID, ClassID) values ('SV09', 5);
+insert into Study (StuID, ClassID) values ('SV10', 5);
 
 insert into MarkColumns (CourseID, MarkName, Percentage) values ('ART606', 'Tutorial', 10);
 insert into MarkColumns (CourseID, MarkName, Percentage) values ('ART606', 'Labs', 20);

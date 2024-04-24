@@ -22,16 +22,6 @@ BEGIN
     RETURN @AverageGrade;
 END;
 
-
-
-
-
-
-
-
-
-
-
 --create funtion that arange all class that a professor teach arange from highest average score to lowest
 DROP FUNCTION IF EXISTS ArrangeClassByAvgScore;
 CREATE OR ALTER PROCEDURE ArrangeClassByAvgScore(@profID VARCHAR(9), @courseID CHAR(6))
@@ -241,6 +231,52 @@ BEGIN
     END IF;
 
     RETURN @StudentRank;
+END;
+
+CREATE PROCEDURE GetScholarshipStudents 
+    @SemesterID NVARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @TotalStudents INT;
+    
+    -- Calculate the total number of distinct students enrolled in the semester
+    SELECT @TotalStudents = COUNT(DISTINCT s.StuID)
+    FROM Study s
+    JOIN Class c ON s.ClassID = c.ClassID
+    WHERE c.SemesterID = @SemesterID;
+
+    WITH StudentStats AS (
+      SELECT
+        s.StuID,
+        [dbo].[GetStudentSemesterAverageGrade](s.StuID, @SemesterID) AS AverageGrade,
+        COUNT(s.StuID) AS CountClass
+      FROM Study s
+      JOIN Class c ON s.ClassID = c.ClassID
+      WHERE c.SemesterID = @SemesterID
+      GROUP BY s.StuID
+    ),
+    QualifiedStudents AS (
+      SELECT
+        StuID,
+        AverageGrade,
+        CountClass
+      FROM StudentStats
+      GROUP BY StuID, AverageGrade, CountClass
+      HAVING AverageGrade > 70
+        AND CountClass >= 3
+    ),
+    TopStudents AS (
+      SELECT
+        *,
+        ROW_NUMBER() OVER (ORDER BY AverageGrade DESC) AS RowNum
+      FROM QualifiedStudents
+    )
+    -- Return the list of students who qualify for the scholarship
+    SELECT StuID, AverageGrade, CountClass, RowNum as Rank
+    FROM TopStudents
+    WHERE RowNum <= CEILING(0.1 * @TotalStudents);
 END;
 
 https://drive.google.com/file/d/1mLXN_ZYbvTjCWxvo8iXkCC7VlZ4wzB7P/view?fbclid=IwAR2A3_32yKFx1XvdmPZfD9YcKhKbqqsCE-OhngamkqAaiagcC3h2gwPFHeY
