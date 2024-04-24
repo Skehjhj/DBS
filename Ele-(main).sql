@@ -349,6 +349,8 @@ BEGIN
 	DROP TABLE #CompletedTest
 END;
 
+EXEC GetStudentsWithCompletedTest 1;
+
 SELECT * FROM GetStudentsWithCompletedTest(1);
 
 CREATE FUNCTION CountStudentsAboveScore(@ScoreIN DECIMAL(10,2), @ClassID INT)
@@ -385,6 +387,8 @@ IF (@ScoreIN > 10)
 
     RETURN @Count;
 END;
+
+SELECT [dbo].[CountStudentsAboveScore](50, 1);
 
 insert into UserTable (userID, mail, name, DoB, sex) values ('GV01', 'lbaldick0@hcmut.edu.vn', 'Libbie Baldick', '28-08-2003', 'Female');
 insert into UserTable (userID, mail, name, DoB, sex) values ('GV02', 'dhartegan1@hcmut.edu.vn', 'Devy Hartegan', '17-12-2004', 'Male');
