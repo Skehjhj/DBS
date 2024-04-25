@@ -82,7 +82,8 @@ CREATE TABLE Class (
   ProfID    VARCHAR(9),
   CONSTRAINT   fk_class_prof_ProfID   FOREIGN KEY
                             (ProfID) REFERENCES Professor (ProfID),
-  Class_size INTEGER
+  Class_size INTEGER,
+  Status VARCHAR(255)
 );
 
 CREATE TABLE Document(
@@ -147,7 +148,6 @@ CREATE TABLE Study(
     Avg_Score DECIMAL(10,2)
 );
 
-
 CREATE TRIGGER UpdateClassSize
 ON Study
 AFTER INSERT, DELETE, UPDATE
@@ -166,10 +166,8 @@ BEGIN
     END
 END;
 
-
-DROP PROCEDURE IF EXISTS arrange_student_on_score;
-CREATE PROCEDURE arrange_student_on_score
-	@_in INT
+DROP PROCEDURE IF EXISTS arange_student_on_score;
+CREATE PROCEDURE arange_student_on_score(@ClassID INT)
 AS
 BEGIN
     SELECT
@@ -178,14 +176,11 @@ BEGIN
         u.name
     FROM
         Study s
-    JOIN
+	JOIN
         UserTable u ON u.userID = s.StuID
-    JOIN
-        Class c ON s.ClassID = c.ClassID
-    JOIN
-        Semester sem ON c.SemesterID = sem.SemesterID
-    WHERE
-        sem.SemesterID = @_in
+	JOIN
+        Class c ON c.ClassID = @ClassID
+		WHERE s.ClassID = c.ClassID
     ORDER BY
         s.Avg_Score DESC;
 END;
@@ -202,12 +197,13 @@ BEGIN
   ORDER BY c.CourseID ASC;
 END;
 
+DROP TRIGGER IF EXISTS trg_UpdateFinalScore
 CREATE OR ALTER TRIGGER trg_UpdateFinalScore
 ON StuWork
 AFTER INSERT
 AS
 BEGIN
-    DELETE FROM FinalScore WHERE StuID = (SELECT StuID FROM inserted) AND TestID = (SELECT TestID FROM inserted);
+    DELETE FROM FinalScore WHERE StuID = (SELECT StuID FROM inserted) AND TestID = (SELECT TestID FROM inserted)
     INSERT INTO FinalScore (StuID, TestID, TimesID, Score)
     SELECT
         s.StuID,
@@ -239,7 +235,52 @@ BEGIN
     UPDATE s
     SET Avg_Score = WeightedScores.Avg_Score
     FROM Study AS s
-    JOIN WeightedScores ON s.StuID = WeightedScores.StuID AND s.ClassID = WeightedScores.ClassID;
+	JOIN WeightedScores ON s.StuID = WeightedScores.StuID AND s.ClassID = WeightedScores.ClassID;
+END;
+
+-- Procedure to get 10% student of Semester with condition about Score and Amount of Courses register, 
+-- then get by Scoree first, then with Amount of Courses register
+CREATE PROCEDURE GetScholarshipStudents 
+    @SemesterID NVARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @TotalStudents INT;
+    -- Calculate the total number of distinct students enrolled in the semester
+    SELECT @TotalStudents = COUNT(DISTINCT s.StuID)
+    FROM Study s
+    JOIN Class c ON s.ClassID = c.ClassI
+    WHERE c.SemesterID = @SemesterID;
+
+    WITH StudentStats AS (
+      SELECT
+        s.StuID,
+        [dbo].[GetStudentSemesterAverageGrade](s.StuID, @SemesterID) AS AverageGrade,
+        COUNT(s.StuID) AS CountClass
+      FROM Study s
+      JOIN Class c ON s.ClassID = c.ClassID
+      WHERE c.SemesterID = @SemesterID
+      GROUP BY s.StuID
+    ),
+    QualifiedStudents AS (
+      SELECT
+        StuID,
+        AverageGrade,
+        CountClass
+      FROM StudentStats
+      GROUP BY StuID, AverageGrade, CountClass
+      HAVING AverageGrade > 70
+        AND CountClass >= 3
+    ),
+    TopStudents AS (
+      SELECT *,
+        ROW_NUMBER() OVER (ORDER BY AverageGrade DESC) AS RowNum
+      FROM QualifiedStudents
+    )
+    -- Return the list of students who qualify for the scholarship
+    SELECT StuID, AverageGrade, CountClass, RowNum as Rank
+    FROM TopStudents
+    WHERE RowNum <= CEILING(0.1 * @TotalStudents);
 END;
 
 CREATE OR ALTER TRIGGER check_add_user
@@ -268,16 +309,14 @@ BEGIN
 END
 
 
-CREATE OR ALTER PROCEDURE check_student_submission_count
-(
-  @student_id VARCHAR(9)
-)
+CREATE OR ALTER PROCEDURE check_student_submission_count (@student_id VARCHAR(9), @classID INT)
 AS
 BEGIN
   DECLARE @submission_count INT
   DECLARE submission_cursor CURSOR FOR
     SELECT COUNT(*) AS submission_count
     FROM StuWork AS sw
+	JOIN Class c ON c.ClassID = @classID
     WHERE sw.StuID = @student_id;
 
   OPEN submission_cursor;
@@ -295,91 +334,23 @@ BEGIN
   END;
 END;
 
-CREATE OR ALTER PROCEDURE ArrangeClassByAvgScore(@profID VARCHAR(9), @courseID CHAR(6))
+CREATE OR ALTER PROCEDURE ArrangeClassByAvgScore(@profID VARCHAR(9), @courseID CHAR(6), @semesterID INT)
 AS
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM Class 
-               WHERE ProfID = @profID AND CourseID = @courseID)
+               WHERE ProfID = @profID AND CourseID = @courseID AND SemesterID = @SemesterID)
     BEGIN
-        SELECT 'Giao vien khong day mon nay'
+        SELECT 'Giao vien khong day mon nay hoac khong day trong ki nay'
     END
 END
 SELECT s.ClassID, c.Classroom, AVG(Avg_Score) AS Avg_Score
 FROM Study s
 JOIN Class c ON s.ClassID = c.ClassID
-WHERE ProfID = @profID
+WHERE ProfID = @profID AND SemesterID = @semesterID
 GROUP BY s.ClassID, c.Classroom
 ORDER BY Avg_Score DESC;
 
-CREATE OR ALTER FUNCTION GetStudentSemesterAverageGrade(@StuID VARCHAR(9), @SemesterID INT)
-RETURNS DECIMAL(10,2)
-AS
-BEGIN
-    DECLARE @StudentGrades TABLE(
-        CourseID CHAR(6),
-        Avg_Score DECIMAL(10,2)
-    );
-
-    INSERT INTO @StudentGrades
-    SELECT CourseID, Avg_Score
-    FROM Study s JOIN Class c ON s.ClassID = c.ClassID
-    WHERE StuID = @StuID AND SemesterID = @SemesterID;
-    DECLARE @AverageGrade DECIMAL(10,2);
-    SELECT @AverageGrade = AVG(Avg_Score)
-    FROM @StudentGrades;
-
-    RETURN @AverageGrade;
-END;
-
 SELECT [dbo].[GetStudentSemesterAverageGrade]('SV01', 223);
-
--- Procedure to get 10% student of Semester with condition about Score and Amount of Courses register, 
--- then get by Scoree first, then with Amount of Courses register
-CREATE PROCEDURE GetScholarshipStudents 
-    @SemesterID NVARCHAR(50)
-AS
-BEGIN
-    SET NOCOUNT ON;
-    DECLARE @TotalStudents INT;
-    -- Calculate the total number of distinct students enrolled in the semester
-    SELECT @TotalStudents = COUNT(DISTINCT s.StuID)
-    FROM Study s
-    JOIN Class c ON s.ClassID = c.ClassID
-    WHERE c.SemesterID = @SemesterID;
-
-    WITH StudentStats AS (
-      SELECT
-        s.StuID,
-        [dbo].[GetStudentSemesterAverageGrade](s.StuID, @SemesterID) AS AverageGrade,
-        COUNT(s.StuID) AS CountClass
-      FROM Study s
-      JOIN Class c ON s.ClassID = c.ClassID
-      WHERE c.SemesterID = @SemesterID
-      GROUP BY s.StuID
-    ),
-    QualifiedStudents AS (
-      SELECT
-        StuID,
-        AverageGrade,
-        CountClass
-      FROM StudentStats
-      GROUP BY StuID, AverageGrade, CountClass
-      HAVING AverageGrade > 70
-        AND CountClass >= 3
-    ),
-    TopStudents AS (
-      SELECT
-        *,
-        ROW_NUMBER() OVER (ORDER BY AverageGrade DESC) AS RowNum
-      FROM QualifiedStudents
-    )
-    -- Return the list of students who qualify for the scholarship
-    SELECT StuID, AverageGrade, CountClass, RowNum as Rank
-    FROM TopStudents
-    WHERE RowNum <= CEILING(0.1 * @TotalStudents);
-END;
-
-
 
 CREATE OR ALTER PROCEDURE GetStudentsWithCompletedTest (@classID INT)
 AS
@@ -388,24 +359,22 @@ BEGIN
     INTO #CompletedTest
     FROM Study s
     JOIN UserTable ut ON s.StuID = ut.userID AND s.ClassID = @classID
-    WHERE EXISTS (SELECT 1 FROM StuWork sw
-                  JOIN Test t ON sw.TestID = t.TestID
-                  WHERE t.ClassID = @classID AND sw.StuID = s.StuID
-                  GROUP BY sw.StuID
+    WHERE EXISTS (SELECT 1 FROM FinalScore fs
+                  JOIN Test t ON fs.TestID = t.TestID
+                  WHERE t.ClassID = @classID AND fs.StuID = s.StuID
+                  GROUP BY fs.StuID
                   HAVING COUNT(*) = (SELECT COUNT(*) FROM Test WHERE ClassID = @classID))
 	SELECT * FROM #CompletedTest
 	DROP TABLE #CompletedTest
 END;
 
-EXEC GetStudentsWithCompletedTest 1;
-
 SELECT * FROM GetStudentsWithCompletedTest(1);
 
-CREATE FUNCTION CountStudentsAboveScore(@ScoreIN DECIMAL(10,2), @ClassID INT)
+CREATE OR ALTER FUNCTION CountStudentsAboveScore(@ScoreIN DECIMAL(10,2), @ClassID INT)
 RETURNS INT
 AS
 BEGIN
-IF (@ScoreIN > 10)
+IF (@ScoreIN > 100)
     BEGIN
 		RETURN NULL;
     END;
@@ -436,7 +405,101 @@ IF (@ScoreIN > 10)
     RETURN @Count;
 END;
 
-SELECT [dbo].[CountStudentsAboveScore](50, 1);
+CREATE PROCEDURE DeleteUnusedProfessor
+AS
+BEGIN
+  DELETE FROM Professor
+  WHERE ProfID NOT IN (SELECT ProfID FROM Class)
+END;
+
+CREATE PROCEDURE UpdateClassStatus(@CurDATE DATETIME, @SemesterID INT)
+AS
+BEGIN
+	IF @CurDATE BETWEEN (SELECT StartDate FROM Semester WHERE SemesterID = @SemesterID)
+                     AND (SELECT EndDate FROM Semester WHERE SemesterID = @SemesterID)
+    BEGIN
+         SELECT 'Hoc ki chua ket thuc'
+    END
+	ELSE
+	BEGIN
+    UPDATE Class
+    SET Status = 'closed'
+    WHERE SemesterID = @SemesterID;
+	END
+END;
+
+CREATE OR ALTER PROCEDURE CreateMissingStuWorks(@CurDATE DATETIME)
+AS
+BEGIN
+
+  DECLARE @testID INT;
+  DECLARE @stuID VARCHAR(9);
+  DECLARE @timesID INT;
+
+  DECLARE test_cursor CURSOR FOR
+    SELECT TestID
+    FROM Test
+    WHERE Deadline < @CurDATE;
+
+  OPEN test_cursor;
+
+  FETCH NEXT FROM test_cursor INTO @testID;
+  WHILE @@FETCH_STATUS = 0
+  BEGIN
+    DECLARE student_cursor CURSOR FOR
+      SELECT StuID
+      FROM Student
+      WHERE NOT EXISTS (
+        SELECT 1
+        FROM StuWork
+        WHERE TestID = @testID AND StuID = Student.StuID
+      );
+
+    OPEN student_cursor;
+
+    FETCH NEXT FROM student_cursor INTO @stuID;
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+
+      SET @timesID = 1;
+
+      INSERT INTO StuWork (StuID, TestID, TimesID, Score)
+      VALUES (@stuID, @testID, @timesID, 0);
+
+      FETCH NEXT FROM student_cursor INTO @stuID;
+    END;
+
+    CLOSE student_cursor;
+    DEALLOCATE student_cursor;
+    FETCH NEXT FROM test_cursor INTO @testID;
+  END;
+
+  CLOSE test_cursor;
+  DEALLOCATE test_cursor;
+END;
+
+
+CREATE OR ALTER FUNCTION GetStudentSemesterAverageGrade(@StuID VARCHAR(9), @SemesterID INT)
+RETURNS DECIMAL(10,2)
+AS
+BEGIN
+    DECLARE @StudentGrades TABLE(
+        CourseID CHAR(6),
+        Avg_Score DECIMAL(10,2)
+    );
+
+    INSERT INTO @StudentGrades
+    SELECT CourseID, Avg_Score
+    FROM Study s JOIN Class c ON s.ClassID = c.ClassID
+    WHERE StuID = @StuID AND SemesterID = @SemesterID;
+
+    DECLARE @AverageGrade DECIMAL(10,2);
+
+    SELECT @AverageGrade = AVG(Avg_Score)
+    FROM @StudentGrades;
+
+    RETURN @AverageGrade;
+END;
 
 insert into UserTable (userID, mail, name, DoB, sex) values ('GV01', 'lbaldick0@hcmut.edu.vn', 'Libbie Baldick', '28-08-2003', 'Female');
 insert into UserTable (userID, mail, name, DoB, sex) values ('GV02', 'dhartegan1@hcmut.edu.vn', 'Devy Hartegan', '17-12-2004', 'Male');
@@ -457,10 +520,10 @@ insert into UserTable (userID, mail, name, DoB, sex) values ('SV10', 'abusainj@h
 insert into UserTable (userID, mail, name, DoB, sex) values ('SV11', 'abusaij@hcmut.edu.vn', 'Amand Busain', '17-06-2000', 'Female');
 insert into UserTable (userID, mail, name, DoB, sex) values ('SV12', 'abusai@hcmut.edu.vn', 'Amand Busai', '17-06-2000', 'Female');
 
+
 UPDATE UserTable
 SET password = '1234567';
 
-UPDATE
 
 insert into Message (MessageID, Content, SenderID) values (1, 'Cras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque.', 'GV01');
 insert into Message (MessageID, Content, SenderID) values (2, 'Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem.', 'SV01');
@@ -518,10 +581,13 @@ INSERT INTO Course (CourseID, Name, Credit, Prerequisites) VALUES ('MUS909', N'I
 
 insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (1, 223, 'L01', 'ART606', 'GV01');
 insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (2, 211, 'L02', 'CHE101', 'GV03');
-insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (3, 212, 'L03', 'BUS707', 'GV02');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (3, 212, 'L03', 'BUS707', 'GV01');
 insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (4, 211, 'L04', 'SCI505', 'GV03');
 insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (5, 213, 'L05', 'MAT202', 'GV04');
 
+UPDATE Class SET ProfID = 'GV01' WHERE ClassID = 3
+UPDATE Class
+SET Status = 'OnGoing';
 
 insert into Document (DocID, DocName, DocType, Docpath, ClassID, Author) values (1, 'Proposal_2021', 'Newsletter', 'https://hud.gov', 1, 'Wenona');
 insert into Document (DocID, DocName, DocType, Docpath, ClassID, Author) values (2, 'Report_Q3', 'Presentation', 'https://illinois.edu', 2, 'Olimpia');
@@ -540,16 +606,28 @@ insert into QuizBank (QuizID, Context, Answer) values (8, 'Cras non velit nec ni
 insert into QuizBank (QuizID, Context, Answer) values (9, 'Cras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit.', 'C');
 insert into QuizBank (QuizID, Context, Answer) values (10, 'Quisque id justo sit amet', 'D');
 
+insert into Study (StuID, ClassID) values ('SV01', 1);
+insert into Study (StuID, ClassID) values ('SV02', 1);
+insert into Study (StuID, ClassID) values ('SV03', 1);
+insert into Study (StuID, ClassID) values ('SV04', 1);
+insert into Study (StuID, ClassID) values ('SV05', 1);
+insert into Study (StuID, ClassID) values ('SV01', 2);
+insert into Study (StuID, ClassID) values ('SV02', 3);
+insert into Study (StuID, ClassID) values ('SV03', 4);
+insert into Study (StuID, ClassID) values ('SV04', 5);
 
-INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (1, 1, N'2024-02-18 00:00:00.000', N'Test4', N'Final');
-INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (2, 1, N'2024-01-10 00:00:00.000', N'Test1', N'Labs');
-INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (3, 1, N'2023-07-06 00:00:00.000', N'Test2', N'Midterm');
-INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (4, 1, N'2023-10-24 00:00:00.000', N'Test5', N'Tutorial');
-INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (5, 2, null, N'Test6', N'Final');
-INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (6, 3, null, N'Test7', N'Final');
-INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (7, 4, null, N'Oscar', N'Final');
-INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (8, 5, null, N'Think Essay', N'Midterm');
-INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (9, 5, null, N'The Aristotle', N'Final');
+insert into Study (StuID, ClassID) values ('SV11', 1);
+insert into Study (StuID, ClassID) values ('SV12', 1);
+
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (1, 1, '2024-18-02 00:00:00.000', N'Test4', N'Final');
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (2, 1, '2024-01-10 00:00:00.000', N'Test1', N'Labs');
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (3, 1, '2023-07-06 00:00:00.000', N'Test2', N'Midterm');
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (4, 1, '2023-24-10 00:00:00.000', N'Test5', N'Tutorial');
+
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (5, 3, '2024-18-02 00:00:00.000', N'Test4', N'Final');
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (6, 3, '2024-01-10 00:00:00.000', N'Test1', N'Labs');
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (7, 3, '2023-07-06 00:00:00.000', N'Test2', N'Midterm');
+INSERT INTO Test (TestID, ClassID, Deadline, Test_name, MarkName) VALUES (8, 3, '2023-24-10 00:00:00.000', N'Test5', N'Tutorial');
 
 
 INSERT Into TestQuestions(TestID, QuestionID) VALUES (1, 1);
@@ -563,90 +641,6 @@ INSERT Into TestQuestions(TestID, QuestionID) VALUES (2, 7);
 INSERT Into TestQuestions(TestID, QuestionID) VALUES (2, 8);
 INSERT Into TestQuestions(TestID, QuestionID) VALUES (2, 9);
 INSERT Into TestQuestions(TestID, QuestionID) VALUES (2, 1);
-
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV01', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 100);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV01', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 100);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 90);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 90);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV03', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 80);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV03', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 80);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV04', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 70);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV04', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 70);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV05', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 60);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV05', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 60);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV06', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 50);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV06', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 50);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV07', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 40);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV07', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 40);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV08', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 30);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV08', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 30);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV09', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 20);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV09', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 20);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV10', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 10);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV10', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 10);
-
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV01', 3, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 100);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 3, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 90);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV03', 3, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 80);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV04', 3, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 70);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV05', 3, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 60);
-
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV06', 4, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 50);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV07', 4, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 40);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV08', 4, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 30);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV09', 4, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 20);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV10', 4, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 10);
-
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV01', 5, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 100);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 5, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 90);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV03', 5, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 80);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV04', 5, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 70);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV05', 5, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 60);
-
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV06', 6, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 50);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV07', 6, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 50);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV08', 6, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 40);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV09', 6, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 40);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV10', 6, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 30);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV06', 7, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 30);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV07', 7, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 20);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV08', 7, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 20);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV09', 7, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 10);
-INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV10', 7, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 10);
-
-insert into Study (StuID, ClassID) values ('SV01', 1);
-insert into Study (StuID, ClassID) values ('SV02', 1);
-insert into Study (StuID, ClassID) values ('SV03', 1);
-insert into Study (StuID, ClassID) values ('SV04', 1);
-insert into Study (StuID, ClassID) values ('SV05', 1);
-insert into Study (StuID, ClassID) values ('SV06', 1);
-insert into Study (StuID, ClassID) values ('SV07', 1);
-insert into Study (StuID, ClassID) values ('SV08', 1);
-insert into Study (StuID, ClassID) values ('SV09', 1);
-insert into Study (StuID, ClassID) values ('SV10', 1);
-
-insert into Study (StuID, ClassID) values ('SV01', 2);
-insert into Study (StuID, ClassID) values ('SV02', 2);
-insert into Study (StuID, ClassID) values ('SV03', 2);
-insert into Study (StuID, ClassID) values ('SV04', 2);
-insert into Study (StuID, ClassID) values ('SV05', 2);
-insert into Study (StuID, ClassID) values ('SV06', 3);
-insert into Study (StuID, ClassID) values ('SV07', 3);
-insert into Study (StuID, ClassID) values ('SV08', 3);
-insert into Study (StuID, ClassID) values ('SV09', 3);
-insert into Study (StuID, ClassID) values ('SV10', 3);
-
-insert into Study (StuID, ClassID) values ('SV01', 4);
-insert into Study (StuID, ClassID) values ('SV02', 4);
-insert into Study (StuID, ClassID) values ('SV03', 4);
-insert into Study (StuID, ClassID) values ('SV04', 4);
-insert into Study (StuID, ClassID) values ('SV05', 4);
-
-insert into Study (StuID, ClassID) values ('SV06', 5);
-insert into Study (StuID, ClassID) values ('SV07', 5);
-insert into Study (StuID, ClassID) values ('SV08', 5);
-insert into Study (StuID, ClassID) values ('SV09', 5);
-insert into Study (StuID, ClassID) values ('SV10', 5);
 
 insert into MarkColumns (CourseID, MarkName, Percentage) values ('ART606', 'Tutorial', 10);
 insert into MarkColumns (CourseID, MarkName, Percentage) values ('ART606', 'Labs', 20);
@@ -666,17 +660,99 @@ insert into MarkColumns (CourseID, MarkName, Percentage) values ('PHI808', 'Midt
 insert into MarkColumns (CourseID, MarkName, Percentage) values ('PHI808', 'Final', 50);
 insert into MarkColumns (CourseID, MarkName, Percentage) values ('SCI505', 'Final', 100);
 
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV01', 1, 1, N'A', N'10:19:54.0000000', N'2024-04-20', 100);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV01', 2, 1, N'a', N'10:21:39.0000000', N'2024-04-20', 90);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV01', 3, 1, N'A', N'10:21:48.0000000', N'2024-04-20', 80);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV01', 4, 1, N'A', N'10:21:49.0000000', N'2024-04-20', 70);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 1, 1, null, null, null, 70);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 1, 2, null, null, null, 100);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 2, 1, null, null, null, 80);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 2, 2, null, null, null, 100);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 3, 1, null, null, null, 90);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV02', 4, 1, null, null, null, 100);
 
-SELECT Class_size
-FROM Class
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV11', 2, 1, null, null, null, 80);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV11', 2, 2, null, null, null, 70);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV11', 1, 1, null, null, null, 50);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV11', 3, 1, null, null, null, 50);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV11', 4, 1, null, null, null, 50);
 
-SELECT * FROM UserTable
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV12', 2, 1, null, null, null, 80);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV12', 2, 2, null, null, null, 70);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV12', 1, 1, null, null, null, 80);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV12', 3, 1, null, null, null, 50);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV12', 4, 1, null, null, null, 50);
+
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV03', 5, 1, null, null, null, 80);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV03', 5, 2, null, null, null, 70);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV03', 6, 1, null, null, null, 30);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV03', 7, 1, null, null, null, 50);
+INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV03', 8, 1, null, null, null, 50);
+
+
+DELETE StuWork
+
+--xoa gv ko dung
+SELECT *
+FROM Professor
+
+EXECUTE [dbo].[DeleteUnusedProfessor]
+
+--check class size
+SELECT * FROM Class
+
+--khoa hoc cua sv
+EXECUTE [dbo].[get_course_enroll]
+    @user_id = 'SV03'
+
+EXECUTE [dbo].[GetStudentsWithCompletedTest] --sai / nhieu hon van ko  tinh -> tinh tren FinalScore ->> fixed
+    @classID = 1
+
+	SELECT * FROM StuWork
+
+
 
 EXECUTE [dbo].[check_student_submission_count]
-    @student_id = 'SV11'
+	@student_id = 'SV11',
+	@classID = 1;
 
-EXECUTE [dbo].[get_course_enroll]
-    @user_id = 'SV01'
-
+--chua ket thuc mon nen chua tinh diem ->> chay ham update ben duoi ->> chay lai.
 EXECUTE [dbo].[arange_student_on_score]
-   @_in = 223
+	@ClassID = 1;
+
+	SELECT * FROM Study
+----
+EXECUTE [dbo].[UpdateClassStatus]
+	@CurDATE = '2025-18-12',
+	@SemesterID = 223
+
+SELECT * FROM Class
+
+EXECUTE [dbo].[CreateMissingStuWorks]
+	@CurDATE = '2025-18-12'
+
+	SELECT * FROM Study
+-----
+
+
+SELECT [dbo].[CountStudentsAboveScore](50,1)
+
+SELECT * FROM Study
+
+---CONTINUE
+
+
+--- them 1 vai lop chung course nay
+EXECUTE [dbo].[ArrangeClassByAvgScore]
+	@profID = 'GV01',
+	@courseID = 'ART606',
+	@semesterID = 223
+
+
+SELECT [dbo].[GetStudentSemesterAverageGrade]('SV03', 223)
+
+
+	EXECUTE [dbo].[CreateMissingStuWorks]
+	@CurDATE = '2025-18-12'
+
+	SELECT * FROM Study
