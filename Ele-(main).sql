@@ -453,55 +453,28 @@ END; -- Tested: EXECUTE [dbo].[UpdateClassStatus]
 	-- @CurDATE = '2024-27-04',
 	-- @SemesterID = 223
 
-CREATE OR ALTER PROCEDURE CreateMissingStuWorks(@CurDATE DATETIME)
+CREATE OR ALTER PROCEDURE UpdateMissingStuWorkScores
 AS
 BEGIN
-
-  DECLARE @testID INT;
-  DECLARE @stuID VARCHAR(9);
-  DECLARE @timesID INT;
-
-  DECLARE test_cursor CURSOR FOR
-    SELECT TestID
-    FROM Test
-    WHERE Deadline < @CurDATE;
-
-  OPEN test_cursor;
-
-  FETCH NEXT FROM test_cursor INTO @testID;
-  WHILE @@FETCH_STATUS = 0
-  BEGIN
-    DECLARE student_cursor CURSOR FOR
-      SELECT StuID
-      FROM Student
-      WHERE NOT EXISTS (
-        SELECT 1
-        FROM StuWork
-        WHERE TestID = @testID AND StuID = Student.StuID
-      );
-
-    OPEN student_cursor;
-
-    FETCH NEXT FROM student_cursor INTO @stuID;
-    WHILE @@FETCH_STATUS = 0
-    BEGIN
-
-      SET @timesID = 1;
-
-      INSERT INTO StuWork (StuID, TestID, TimesID, Score)
-      VALUES (@stuID, @testID, @timesID, 0);
-
-      FETCH NEXT FROM student_cursor INTO @stuID;
-    END;
-
-    CLOSE student_cursor;
-    DEALLOCATE student_cursor;
-    FETCH NEXT FROM test_cursor INTO @testID;
-  END;
-
-  CLOSE test_cursor;
-  DEALLOCATE test_cursor;
-END;
+    WITH TestThatStudentDontDo AS (
+        SELECT tn.StuID, tn.TestID, Fs.Score
+        FROM (
+            SELECT StuID, t.TestID, t.Deadline
+            FROM Study AS st
+            JOIN Test AS t ON st.ClassID = t.ClassID
+        ) AS tn
+        LEFT JOIN (
+            SELECT StuID, TestID, MAX(Score) AS Score
+            FROM StuWork
+            GROUP BY StuID, TestID
+        ) AS Fs ON Fs.StuID = tn.StuID AND Fs.TestID = tn.TestID
+        WHERE tn.Deadline < GETDATE()
+    )
+    INSERT INTO StuWork (StuID, TestID, TimesID, Score)
+    SELECT tnd.StuID, tnd.TestID, 1, 0
+    FROM TestThatStudentDontDo AS tnd
+    WHERE tnd.Score IS NULL;
+END; -- Tested: EXEC UpdateMissingStuWorkScores;
 
 
 CREATE OR ALTER FUNCTION GetStudentSemesterAverageGrade(@StuID VARCHAR(9), @SemesterID INT)
