@@ -226,6 +226,50 @@ BEGIN
     WHERE StuID = @StuID AND ClassID = @ClassID;
     RETURN @AvgScore;
 END;
+
+--keep this trigger cause we dont have enough trigger
+CREATE OR ALTER TRIGGER trg_UpdateFinalScore
+ON StuWork
+AFTER INSERT
+AS
+BEGIN
+    DELETE FROM FinalScore WHERE StuID = (SELECT StuID FROM inserted) AND TestID = (SELECT TestID FROM inserted)
+    INSERT INTO FinalScore (StuID, TestID, TimesID, Score)
+    SELECT
+        s.StuID,
+        s.TestID,
+        s.TimesID,
+        s.Score
+    FROM StuWork s
+    INNER JOIN (
+        SELECT StuID, TestID, MAX(Score) AS MaxScore
+        FROM StuWork
+        WHERE StuID = (SELECT StuID FROM inserted) AND TestID = (SELECT TestID FROM inserted)
+        GROUP BY StuID, TestID
+    ) max_scores
+    ON s.StuID = max_scores.StuID
+    AND s.TestID = max_scores.TestID
+    AND s.Score = max_scores.MaxScore;
+
+    WITH WeightedScores AS (
+        SELECT
+            Fs.StuID,
+            c.ClassID,
+            COALESCE(SUM(Fs.Score * Mc.Percentage), 0) / 100 AS Avg_Score
+        FROM FinalScore AS Fs
+        JOIN Test AS t ON Fs.TestID = t.TestID
+        JOIN Class AS c ON t.ClassID = c.ClassID
+        JOIN MarkColumns AS mc ON c.CourseID = mc.CourseID AND t.MarkName = mc.MarkName
+        GROUP BY Fs.StuID, c.ClassID
+    )
+    UPDATE s
+    SET Avg_Score = WeightedScores.Avg_Score
+    FROM Study AS s
+	JOIN WeightedScores ON s.StuID = WeightedScores.StuID AND s.ClassID = WeightedScores.ClassID;
+END;
+
+
+
 -- Tested: SELECT [dbo].CalculateAverageScore('SV01', 1)
 CREATE OR ALTER PROCEDURE UpdateAvgScoreForStudy -- Update the Avg_Score of Study table
 AS
@@ -265,7 +309,7 @@ END; -- Test: EXEC UpdateAvgScoreForStudy
 -- Procedure to get 10% student of Semester with condition about Score and Amount of Courses register, 
 -- then get by Scoree first, then with Amount of Courses register
 CREATE OR ALTER PROCEDURE GetScholarshipStudents 
-    @SemesterID NVARCHAR(50)
+    @SemesterID INT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -305,7 +349,8 @@ BEGIN
     SELECT StuID, AverageGrade, CountClass, RowNum as Rank
     FROM TopStudents
     WHERE RowNum <= CEILING(0.1 * @TotalStudents);
-END; -- Test: EXEC GetScholarshipStudents 223
+END; 
+-- Test: EXEC GetScholarshipStudents 223
 
 CREATE OR ALTER TRIGGER check_add_user
 ON UserTable
@@ -428,11 +473,13 @@ IF (@ScoreIN > 100)
     RETURN @Count;
 END; -- Tested: SELECT [dbo].CountStudentsAboveScore(80, 6)
 
-CREATE PROCEDURE DeleteUnusedProfessor
+CREATE OR ALTER PROCEDURE DeleteUnusedProfessor
 AS
 BEGIN
   DELETE FROM Professor
   WHERE ProfID NOT IN (SELECT ProfID FROM Class)
+  DELETE FROM UserTable
+  WHERE userID NOT IN (SELECT ProfID FROM Class)
 END;
 
 CREATE PROCEDURE UpdateClassStatus(@CurDATE DATETIME, @SemesterID INT)
@@ -453,7 +500,7 @@ END; -- Tested: EXECUTE [dbo].[UpdateClassStatus]
 	-- @CurDATE = '2024-27-04',
 	-- @SemesterID = 223
 
-CREATE OR ALTER PROCEDURE UpdateMissingStuWorkScores
+CREATE OR ALTER PROCEDURE UpdateMissingStuWorkScores (@CurDATE DATETIME)
 AS
 BEGIN
     WITH TestThatStudentDontDo AS (
@@ -468,7 +515,7 @@ BEGIN
             FROM StuWork
             GROUP BY StuID, TestID
         ) AS Fs ON Fs.StuID = tn.StuID AND Fs.TestID = tn.TestID
-        WHERE tn.Deadline < GETDATE()
+        WHERE tn.Deadline < @CurDATE
     )
     INSERT INTO StuWork (StuID, TestID, TimesID, Score)
     SELECT tnd.StuID, tnd.TestID, 1, 0
@@ -498,6 +545,50 @@ BEGIN
 
     RETURN @AverageGrade;
 END; -- Tested: select [dbo].GetStudentSemesterAverageGrade('SV01', 223)
+
+--- NEW!!!
+-- 2.1 yeu cau lam` chung 1 bang th.
+CREATE PROCEDURE UpdateProfessorDegree(
+  @ProfID VARCHAR(9),
+  @NewDegree VARCHAR(255)
+)
+AS
+BEGIN
+  UPDATE Professor
+  SET Degree = @NewDegree
+  WHERE ProfID = @ProfID;
+END;
+
+CREATE OR ALTER PROCEDURE Insert_professor(
+  @ProfID VARCHAR(9),
+  @mail VARCHAR(255),
+  @name VARCHAR(255),
+  @DoB DATE,
+  @sex VARCHAR(10),
+  @password VARCHAR(10),
+  @Degree VARCHAR(255)
+)
+AS
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM UserTable WHERE userID = @ProfID)
+  BEGIN
+
+  PRINT 'Chua co giang vien nay, tao giang vien moi';
+  INSERT INTO UserTable (userID, mail, name, DoB, sex, password)
+  VALUES (@ProfID, @mail, @name, @DoB, @sex, @password);
+
+  INSERT INTO Professor (ProfID, Degree)
+  VALUES (@ProfID, @Degree);
+  END
+
+  ELSE
+  BEGIN
+  INSERT INTO Professor (ProfID, Degree)
+  VALUES (@ProfID, @Degree);
+  END
+END;
+
+
 
 insert into UserTable (userID, mail, name, DoB, sex) values ('GV01', 'lbaldick0@hcmut.edu.vn', 'Libbie Baldick', '28-08-2003', 'Female');
 insert into UserTable (userID, mail, name, DoB, sex) values ('GV02', 'dhartegan1@hcmut.edu.vn', 'Devy Hartegan', '17-12-2004', 'Male');
