@@ -12,7 +12,6 @@ connection_string = f"""
 """
 app = Flask(__name__)
 @app.route("/")
-@app.route("/")
 def hello_world():
     connection = odbc.connect(connection_string)
     cursor = connection.cursor()
@@ -20,16 +19,15 @@ def hello_world():
     rows = cursor.fetchall()
 
     # Construct a list of dictionaries for each row
-    student_data = []
+    professor_data = []
     for row in rows:
-        student_data.append({
+        professor_data.append({
             'id': row[0],
             'date_join': row[1],
-            'program': row[2],
-            'major': row[3],
+            'degree': row[2],
         })
 
     # Render the HTML template and pass the student data
-    return render_template('video.html', students=student_data)
+    return render_template('hello.html', professors=professor_data)
     
     

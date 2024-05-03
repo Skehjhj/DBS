@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Student List</title>
+    <title>Professors List</title>
     <link rel="stylesheet" href="/static/main.css">
 </head>
 <body>
@@ -9,15 +9,13 @@
         <tr>
             <th>ID</th>
             <th>DateJoin</th>
-            <th>Program</th>
-            <th>Major</th>
+            <th>Degree</th>
         </tr>
-        {% for student in students %}
+        {% for professor in professors %}
         <tr>
-            <td>{{ student.id }}</td>
-            <td>{{ student.date_join }}</td>
-            <td>{{ student.program }}</td>
-            <td>{{ student.major }}</td>
+            <td>{{ professor.id }}</td>
+            <td>{{ professor.date_join }}</td>
+            <td>{{ professor.degree }}</td>
         </tr>
         {% endfor %}
     </table>
