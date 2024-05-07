@@ -74,12 +74,14 @@ INSERT INTO Course (CourseID, Name, Credit, Prerequisites) VALUES ('SCI505', N'H
 INSERT INTO Course (CourseID, Name, Credit, Prerequisites) VALUES ('HIS404', N'Creative Writing Workshop', 2, 'SCI505');
 INSERT INTO Course (CourseID, Name, Credit, Prerequisites) VALUES ('MUS909', N'Introduction to Computer Science', 4, 'CHE101');
 
-insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (1, 223, 'CH-01', 'CHE101', 'GV01');
-insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (2, 223, 'CH-02', 'CHE101', 'GV01');
-insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (3, 223, 'CH-03', 'CHE101', 'GV01');
-insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (4, 223, 'AR-01', 'ART606', 'GV03');
-insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (5, 223, 'BU-01', 'BUS707', 'GV01');
-insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (6, 223, 'SC-01', 'SCI505', 'GV03');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (1, 223, 'L01', 'CHE101', 'GV01');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (2, 223, 'L02', 'CHE101', 'GV01');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (3, 223, 'L03', 'CHE101', 'GV01');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (4, 223, 'L01', 'ART606', 'GV03');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (5, 223, 'L01', 'BUS707', 'GV01');
+insert into Class (ClassID, SemesterID, Classroom, CourseID, ProfID) values (6, 223, 'L01', 'SCI505', 'GV03');
+UPDATE Class
+Set Status = 'Ongoing'
 
 insert into Document (DocID, DocName, DocType, Docpath, ClassID, Author) values (1, 'Proposal_2021', 'Newsletter', 'https://hud.gov', 1, 'Wenona');
 insert into Document (DocID, DocName, DocType, Docpath, ClassID, Author) values (2, 'Report_Q3', 'Presentation', 'https://illinois.edu', 2, 'Olimpia');
@@ -261,3 +263,4 @@ INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) V
 INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV10', 10, 1, N'A', N'10:21:49.0000000', N'2024-04-20', 55);
 INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV11', 10, 1, N'A', N'10:21:49.0000000', N'2024-04-20', 50);
 INSERT INTO StuWork (StuID, TestID, TimesID, StuWork, DoTime, DoneTime, Score) VALUES (N'SV12', 10, 1, N'A', N'10:21:49.0000000', N'2024-04-20', 45);
+

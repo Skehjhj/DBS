@@ -179,18 +179,6 @@ BEGIN
         s.Avg_Score DESC;
 END;
 
-CREATE OR ALTER PROCEDURE get_course_enroll(
-  @user_id VARCHAR(9)
-)
-AS
-BEGIN
-  SELECT c.CourseID
-  FROM Class AS c
-  JOIN Study AS s ON s.ClassID = c.ClassID
-  WHERE s.StuID = @user_id
-  ORDER BY c.CourseID ASC;
-END;
-
 CREATE OR ALTER TRIGGER trg_UpdateFinalScore
 ON StuWork
 AFTER INSERT
@@ -314,7 +302,7 @@ BEGIN
   CLOSE submission_cursor;
   DEALLOCATE submission_cursor;
 
-  IF @submission_count IS NULL
+  IF @submission_count IS NULL OR @submission_count = 0
   BEGIN
     SELECT 'Sinh vien chua nop bai nao'
   END
@@ -322,38 +310,6 @@ BEGIN
   BEGIN
     SELECT CONCAT('Sinh vien da nop ', @submission_count, ' bai')
   END;
-END;
-
-CREATE OR ALTER PROCEDURE ArrangeClassByAvgScore(@profID VARCHAR(9), @courseID CHAR(6), @semesterID INT)
-AS
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM Class 
-               WHERE ProfID = @profID AND CourseID = @courseID AND SemesterID = @SemesterID)
-    BEGIN
-        SELECT 'Giao vien khong day mon nay hoac khong day trong ki nay'
-    END
-END
-SELECT s.ClassID, c.Classroom, AVG(Avg_Score) AS Avg_Score
-FROM Study s
-JOIN Class c ON s.ClassID = c.ClassID
-WHERE ProfID = @profID AND SemesterID = @semesterID
-GROUP BY s.ClassID, c.Classroom
-ORDER BY Avg_Score DESC;
-
-CREATE OR ALTER PROCEDURE GetStudentsWithCompletedTest (@classID INT)
-AS
-BEGIN
-    SELECT StuID, name
-    INTO #CompletedTest
-    FROM Study s
-    JOIN UserTable ut ON s.StuID = ut.userID AND s.ClassID = @classID
-    WHERE EXISTS (SELECT 1 FROM FinalScore fs
-                  JOIN Test t ON fs.TestID = t.TestID
-                  WHERE t.ClassID = @classID AND fs.StuID = s.StuID
-                  GROUP BY fs.StuID
-                  HAVING COUNT(*) = (SELECT COUNT(*) FROM Test WHERE ClassID = @classID))
-	SELECT * FROM #CompletedTest
-	DROP TABLE #CompletedTest
 END;
 
 CREATE OR ALTER FUNCTION CountStudentsAboveScore(@ScoreIN DECIMAL(10,2), @ClassID INT)
@@ -396,47 +352,55 @@ AS
 BEGIN
   DELETE FROM Professor
   WHERE ProfID NOT IN (SELECT ProfID FROM Class)
-  DELETE FROM UserTable
-  WHERE userID NOT IN (SELECT ProfID FROM Class)
 END;
 
-CREATE PROCEDURE UpdateClassStatus(@CurDATE DATETIME, @SemesterID INT)
-AS
-BEGIN
-	IF @CurDATE BETWEEN (SELECT StartDate FROM Semester WHERE SemesterID = @SemesterID)
-                     AND (SELECT EndDate FROM Semester WHERE SemesterID = @SemesterID)
-    BEGIN
-         SELECT 'Ongoing'
-    END
-	ELSE
-	BEGIN
-    UPDATE Class
-    SET Status = 'closed'
-    WHERE SemesterID = @SemesterID;
-	END
-END; 
 
 CREATE OR ALTER PROCEDURE UpdateMissingStuWorkScores (@CurDATE DATETIME)
 AS
 BEGIN
-    WITH TestThatStudentDontDo AS (
-        SELECT tn.StuID, tn.TestID, Fs.Score
-        FROM (
-            SELECT StuID, t.TestID, t.Deadline
-            FROM Study AS st
-            JOIN Test AS t ON st.ClassID = t.ClassID
-        ) AS tn
-        LEFT JOIN (
-            SELECT StuID, TestID, MAX(Score) AS Score
-            FROM StuWork
-            GROUP BY StuID, TestID
-        ) AS Fs ON Fs.StuID = tn.StuID AND Fs.TestID = tn.TestID
-        WHERE tn.Deadline < @CurDATE
-    )
-    INSERT INTO StuWork (StuID, TestID, TimesID, Score)
-    SELECT tnd.StuID, tnd.TestID, 1, 0
-    FROM TestThatStudentDontDo AS tnd
-    WHERE tnd.Score IS NULL;
+  DECLARE @testID INT;
+  DECLARE @stuID VARCHAR(9);
+  DECLARE @classID INT;
+  DECLARE @timesID INT;
+  DECLARE test_cursor CURSOR FOR
+    SELECT TestID, ClassID
+    FROM Test
+    WHERE Deadline < @CurDATE;
+
+  OPEN test_cursor;
+
+  FETCH NEXT FROM test_cursor INTO @testID, @classID;
+  WHILE @@FETCH_STATUS = 0
+  BEGIN
+    DECLARE student_cursor CURSOR FOR
+      SELECT StuID
+      FROM Study
+      WHERE ClassID = @classID
+      AND NOT EXISTS (
+        SELECT 1
+        FROM StuWork
+        WHERE TestID = @testID AND StuID = Study.StuID
+      );
+
+    OPEN student_cursor;
+
+    FETCH NEXT FROM student_cursor INTO @stuID;
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+      SET @timesID = 1;
+      INSERT INTO StuWork (StuID, TestID, TimesID, Score)
+      VALUES (@stuID, @testID, @timesID, 0);
+
+      FETCH NEXT FROM student_cursor INTO @stuID;
+    END;
+
+    CLOSE student_cursor;
+    DEALLOCATE student_cursor;
+    FETCH NEXT FROM test_cursor INTO @testID, @classID;
+  END;
+
+  CLOSE test_cursor;
+  DEALLOCATE test_cursor;
 END;
 
 CREATE OR ALTER FUNCTION GetStudentSemesterAverageGrade(@StuID VARCHAR(9), @SemesterID INT)
