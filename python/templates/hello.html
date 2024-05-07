@@ -2,22 +2,84 @@
 <html>
 <head>
     <title>Professors List</title>
-    <link rel="stylesheet" href="/static/main.css">
+    <link rel="stylesheet" href="../static/main.css">
 </head>
 <body>
+    <nav>
+        <ul>
+          <li><a href="#">Home</a></li>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </nav>
+    <!-- Create Button -->
+    <button onclick="openCreateForm()">Create</button>
     <table>
         <tr>
             <th>ID</th>
-            <th>DateJoin</th>
+            <th>Name</th>
             <th>Degree</th>
+            <th>Mail</th>
+            <th>Date of Birth</th>
+            <th>Gender</th>
+            <th>Action</th>
         </tr>
         {% for professor in professors %}
         <tr>
             <td>{{ professor.id }}</td>
-            <td>{{ professor.date_join }}</td>
+            <td>{{ professor.name }}</td>
             <td>{{ professor.degree }}</td>
+            <td>{{ professor.mail }}</td>
+            <td>{{ professor.dob }}</td>
+            <td>{{ professor.gender }}</td>
+            <td>
+                <div class="button-container">
+                    <!-- Update Button -->
+                    <button onclick="openUpdateForm('{{ professor.id }}', '{{ professor.name }}', '{{ professor.degree }}', '{{ professor.mail }}', '{{ professor.dob }}', '{{ professor.gender }}')">Update</button>
+                    <!-- Delete Form -->
+                    <form action="/delete" method="post">
+                        <input type="hidden" name="prof_id" value="{{ professor.id }}">
+                        <button id="delete" type="submit">Delete</button>
+                    </form>
+                </div>
+            </td>
         </tr>
         {% endfor %}
-    </table>
+    </table>    
+    <!-- Update Pop-up Form -->
+    <div id="updateForm" class="popup-form-container">
+        <div class="popup-form">
+            <span class="close-button" onclick="closeForm()">&times;</span>
+            <h2>Update Professor</h2>
+            <form action="/update" method="post">
+                <input type="hidden" id="updateId" name="prof_id">
+                <input type="text" id="updateName" name="new_name" placeholder="New Name" required>
+                <input type="text" id="updateDegree" name="new_degree" placeholder="New Degree" required>
+                <input type="text" id="updateMail" name="new_mail" placeholder="New Mail" required>
+                <input type="date" id="updateDob" name="new_dob" placeholder="New Date of Birth" required>
+                <input type="text" id="updateGender" name="new_gender" placeholder="New Gender" required>
+                <button type="submit">Update</button>
+                <button type="button" onclick="closeForm()">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Pop-up Form -->
+    <div id="createForm" class="popup-form-container">
+        <div class="popup-form">
+            <span class="close-button" onclick="closeForm()">&times;</span>
+            <h2>Create Professor</h2>
+            <form action="/create" method="post">
+                <input type="text" name="name" placeholder="Name" required>
+                <input type="text" name="degree" placeholder="Degree" required>
+                <input type="text" name="mail" placeholder="Mail" required>
+                <input type="date" name="dob" placeholder="Date of Birth" required>
+                <input type="text" name="gender" placeholder="Gender" required>
+                <button type="submit">Create</button>
+                <button type="button" onclick="closeForm()">Cancel</button>
+            </form>
+        </div>
+    </div>
+    <script src="../static/assets/js/main.js"></script>
 </body>
 </html>
