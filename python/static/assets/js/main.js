@@ -9,6 +9,16 @@ function openUpdateForm(id, name, degree, mail, dob, gender) {
     document.getElementById("updateForm").style.display = "block";
 }
 
+function openUpdateFormStudent(id, name, gender, datejoin, major, program) {
+    document.getElementById("updateId").value = id;
+    document.getElementById("updateName").value = name;
+    document.getElementById("updateGender").value = gender;
+    document.getElementById("updateDJ").value = datejoin;
+    document.getElementById("updateMajor").value = major;
+    document.getElementById("updateProgram").value = program;
+    document.getElementById("updateForm").style.display = "block";
+}
+
 // Function to open the create form pop-up
 function openCreateForm() {
     document.getElementById("createForm").style.display = "block";

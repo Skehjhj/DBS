@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student</title>
+    <link rel="stylesheet" href="../static/student.css">
+</head>
+<body>
+    <nav>
+        <ul>
+          <li><a href="#">Professor</a></li>
+          <li><a href="#">Student</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </nav>
+    <!-- Create Button -->
+    <div class="top_button">
+        <button onclick="openCreateForm()">Create</button>
+        <button>View Scholarship</button>
+    </div>
+    
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Gender</th>
+            <th>Date Join</th>
+            <th>Major</th>
+            <th>Program</th>
+            <th>Average Grade</th>
+            <th>Action</th>
+        </tr>
+        {% for student in students %}
+        <tr>
+            <td>{{ student.id }}</td>
+            <td>{{ student.name }}</td>
+            <td>{{ student.gender }}</td>
+            <td>{{ student.datejoin }}</td>
+            <td>{{ student.major }}</td>
+            <td>{{ student.program }}</td>
+            <td></td>
+            <td>
+                <div class="button-container">
+                    <!-- Update Button -->
+                    <button onclick="openUpdateFormStudent('{{ student.id }}', '{{ student.name }}', '{{ student.gender }}', '{{ student.datejoin }}', '{{ student.major }}', '{{ student.program }}')">Update</button>
+                    <!-- Delete Form -->
+                    <form action="/delete" method="post">
+                        <input type="hidden" name="stu_id" value="{{ student.id }}">
+                        <button id="delete" type="submit">Delete</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>    
+    <!-- Update Pop-up Form -->
+    <div id="updateForm" class="popup-form-container">
+        <div class="popup-form">
+            <span class="close-button" onclick="closeForm()">&times;</span>
+            <h2>Update student</h2>
+            <form action="/update" method="post">
+                <!-- Class input -->
+                <div class="input">
+                    <input type="hidden" id="updateId" name="stu_id">
+                    <input type="text" id="updateName" name="new_name" placeholder="New Name" required>
+                    <select id="updateGender" name="new_gender" required>
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                    <input type="date" id="updateDJ" name="new_dj" placeholder="New Date Join" required>
+                    <input type="text" id="updateMajor" name="new_major" placeholder="New Major" required>
+                    <input type="text" id="updateProgram" name="new_program" placeholder="New Program" required>
+                </div>
+                
+                <button type="submit">Update</button>
+                <button type="button" onclick="closeForm()">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Pop-up Form -->
+    <div id="createForm" class="popup-form-container">
+        <div class="popup-form">
+            <span class="close-button" onclick="closeForm()">&times;</span>
+            <h2>Create student</h2>
+            <form action="/create" method="post">
+                <div class="input">
+                    <input type="hidden" id="updateId" name="stu_id">
+                    <input type="text" id="updateName" name="new_name" placeholder="New Name" required>
+                    <select id="updateGender" name="new_gender" required>
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                    <input type="date" id="updateDJ" name="new_dj" placeholder="New Date Join" required>
+                    <input type="text" id="updateMajor" name="new_major" placeholder="New Major" required>
+                    <input type="text" id="updateProgram" name="new_program" placeholder="New Program" required>
+                </div>
+                <button type="submit">Create</button>
+                <button type="button" onclick="closeForm()">Cancel</button>
+            </form>
+        </div>
+    </div>
+    <script src="../static/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+/* Target the table element */
+/* Style for the create button */
+button {
+    background-color: #4CAF50; /* Set background color */
+    color: white; /* Set text color */
+    padding: 10px 20px; /* Add padding */
+    border: none; /* Remove border */
+    border-radius: 5px; /* Add rounded corners */
+    cursor: pointer; /* Add cursor pointer on hover */
+    transition: background-color 0.3s; /* Add smooth transition */
+    margin: 20px 50px; /* Add margin */
+}
+
+button#delete {
+    background-color: red; /* Set background color */
+    display: inline;
+}
+
+button:hover {
+    background-color: #45a049; /* Change background color on hover */
+}
+
+table {
+    border-collapse: collapse; /* Collapse borders for adjacent cells */
+    width: 1100px; /* Set a width for the table */
+    margin: 20px 50px; /* Center align the table */
+  }
+  
+  /* Style the table header (<th>) */
+  th {
+    background-color: #F0F0F0; /* Light gray background */
+    padding: 10px; /* Add padding to content */
+    border: 1px solid #ddd; /* Add a thin border */
+    text-align: center; /* Align content to the left */
+  }
+  
+  /* Style the table data (<td>) */
+  td {
+    padding: 5px; /* Add padding to content */
+    border: 1px solid #ddd; /* Add a thin border */
+  }
+  .popup-form-container {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+        .popup-form {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Style for the close button */
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+  
+        body, ul {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Style for the navigation menu */
+        nav {
+            background-color: #333; /* Set background color */
+            padding: 10px 0; /* Add padding */
+        }
+
+        nav ul {
+            list-style-type: none; /* Remove default bullet points */
+            margin: 0;
+            padding: 0;
+            text-align: center; /* Center align menu items */
+        }
+
+        nav ul li {
+            display: inline-block; /* Display menu items horizontally */
+            margin-right: 20px; /* Add right margin between menu items */
+        }
+
+        nav ul li:last-child {
+            margin-right: 0; /* Remove right margin from the last menu item */
+        }
+
+        nav ul li a {
+            text-decoration: none; /* Remove underline from links */
+            color: #fff; /* Set text color */
+            padding: 10px 20px; /* Add padding to menu items */
+            border-radius: 5px; /* Add rounded corners */
+            transition: background-color 0.3s; /* Add smooth transition */
+        }
+
+        nav ul li a:hover {
+            background-color: #555; /* Change background color on hover */
+        }
+
+.button-container button,
+.button-container form {
+    display: inline-block;
+    margin-right: 10px; /* Adjust the margin as per your preference */
+}

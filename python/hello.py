@@ -34,8 +34,31 @@ def hello_world():
         })
 
     # Render the HTML template and pass the student data
-    return render_template('hello.html', professors=professor_data)
+    return render_template('professor.html', professors=professor_data)
 
+@app.route("/student")
+def student():
+    connection = odbc.connect(connection_string)
+    cursor = connection.cursor()
+    cursor.execute("""SELECT StuID, name, DoB, sex, DateJoin, Major, Program
+                    From Student
+                    JOIN UserTable
+                    ON Student.StuID = UserTable.userID""")
+    rows = cursor.fetchall()
+
+    student_data = []
+    for row in rows:
+        student_data.append({
+            'id': row[0],
+            'name': row[1],
+            'dob': row[2],
+            'gender': row[3],
+            'datejoin': row[4],
+            'major': row[5],
+            'program': row[6]
+        })
+    return render_template('student.html', students=student_data)
+    
 @app.route("/update", methods=["POST"])
 def update_professor():
     if request.method == "POST":
@@ -52,15 +75,8 @@ def update_professor():
         cursor = connection.cursor()
 
         # Execute SQL query to update the record
-        cursor.execute("""
-            UPDATE Professor
-            SET name = ?,
-                Degree = ?,
-                mail = ?,
-                DoB = ?,
-                sex = ?
-            WHERE ProfID = ?
-        """, (new_name, new_degree, new_mail, new_dob, new_gender, prof_id))
+        cursor.execute("EXEC Update_professor ?, ?, ?, ?, ?, ?", 
+                       (prof_id, new_mail, new_name, new_dob, new_gender, new_degree))
         
         # Commit the transaction
         connection.commit()
@@ -70,4 +86,55 @@ def update_professor():
         connection.close()
 
         # Redirect to the home page to reload the HTML template with updated data
+        return redirect("/")
+
+@app.route("/create", methods=["POST"])
+def create_professor():
+    if request.method == "POST":
+        # Retrieve data from the form
+        name = request.form["name"]
+        degree = request.form["degree"]
+        mail = request.form["mail"]
+        dob = request.form["dob"]
+        gender = request.form["gender"]
+        
+        # Connect to the database
+        connection = odbc.connect(connection_string)
+        cursor = connection.cursor()
+
+        # Execute the stored procedure to insert the new professor
+        cursor.execute("EXEC Insert_professor ?, ?, ?, ?, ?", 
+                       (mail, name, dob, gender, degree))
+        
+        # Commit the transaction
+        connection.commit()
+
+        # Close the cursor and connection
+        cursor.close()
+        connection.close()
+
+        # Redirect to the home page or wherever you want after successful insertion
+        return redirect("/")
+
+@app.route("/delete", methods=["POST"])
+def delete_professor():
+    if request.method == "POST":
+        # Retrieve professor ID from the form
+        prof_id = request.form["prof_id"]
+        
+        # Connect to the database
+        connection = odbc.connect(connection_string)
+        cursor = connection.cursor()
+
+        # Execute the stored procedure to delete the professor
+        cursor.execute("EXEC DeleteProfessor ?", (prof_id,))
+        
+        # Commit the transaction
+        connection.commit()
+
+        # Close the cursor and connection
+        cursor.close()
+        connection.close()
+
+        # Redirect to the home page or wherever you want after successful deletion
         return redirect("/")

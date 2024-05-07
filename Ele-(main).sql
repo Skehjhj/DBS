@@ -425,44 +425,84 @@ BEGIN
     RETURN @AverageGrade;
 END;
 
-CREATE PROCEDURE UpdateProfessorDegree(
-  @ProfID VARCHAR(9),
-  @NewDegree VARCHAR(255)
+CREATE OR ALTER PROCEDURE Update_professor(
+    @ProfID VARCHAR(9),
+    @mail VARCHAR(255),
+    @name VARCHAR(255),
+    @DoB DATE,
+    @sex VARCHAR(10),
+    @Degree VARCHAR(255)
 )
 AS
 BEGIN
-  UPDATE Professor
-  SET Degree = @NewDegree
-  WHERE ProfID = @ProfID;
+    IF EXISTS (SELECT 1 FROM UserTable WHERE userID = @ProfID)
+    BEGIN
+        UPDATE UserTable
+        SET mail = @mail,
+            name = @name,
+            DoB = @DoB,
+            sex = @sex
+        WHERE userID = @ProfID;
+        UPDATE Professor
+        SET Degree = @Degree
+        WHERE ProfID = @ProfID;
+        PRINT 'Professor information updated successfully.';
+    END
+    ELSE
+    BEGIN
+        PRINT 'Professor not found in the database.';
+    END
 END;
 
 CREATE OR ALTER PROCEDURE Insert_professor(
-  @ProfID VARCHAR(9),
-  @mail VARCHAR(255),
-  @name VARCHAR(255),
-  @DoB DATE,
-  @sex VARCHAR(10),
-  @password VARCHAR(10),
-  @Degree VARCHAR(255)
+    @mail VARCHAR(255),
+    @name VARCHAR(255),
+    @DoB DATE,
+    @sex VARCHAR(10),
+    @Degree VARCHAR(255)
 )
 AS
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM UserTable WHERE userID = @ProfID)
-  BEGIN
+    DECLARE @ProfID VARCHAR(9);
 
-  PRINT 'Chua co giang vien nay, tao giang vien moi';
-  INSERT INTO UserTable (userID, mail, name, DoB, sex, password)
-  VALUES (@ProfID, @mail, @name, @DoB, @sex, @password);
+    -- Get the largest professor ID from the database
+    SELECT TOP 1 @ProfID = userID
+    FROM UserTable
+    WHERE userID LIKE 'GV%'
+    ORDER BY CAST(RIGHT(userID, 2) AS INT) DESC;
 
-  INSERT INTO Professor (ProfID, Degree)
-  VALUES (@ProfID, @Degree);
-  END
+    -- Increment the two-digit number by one
+    IF @ProfID IS NOT NULL
+    BEGIN
+        SET @ProfID = 'GV' + RIGHT('0' + CAST(CAST(RIGHT(@ProfID, 2) AS INT) + 1 AS VARCHAR), 2);
+    END
+    ELSE
+    BEGIN
+        -- If no existing professor IDs found, start with GV01
+        SET @ProfID = 'GV01';
+    END
 
-  ELSE
-  BEGIN
-  INSERT INTO Professor (ProfID, Degree)
-  VALUES (@ProfID, @Degree);
-  END
+    -- Insert into UserTable
+    INSERT INTO UserTable (userID, mail, name, DoB, sex)
+    VALUES (@ProfID, @mail, @name, @DoB, @sex);
+
+    -- Insert into Professor
+    INSERT INTO Professor (ProfID, Degree)
+    VALUES (@ProfID, @Degree);
 END;
 
-
+CREATE OR ALTER PROCEDURE DeleteProfessor
+    @ProfID VARCHAR(9)
+AS
+BEGIN
+    IF EXISTS (SELECT 1 FROM UserTable WHERE userID = @ProfID)
+    BEGIN
+        DELETE FROM Professor WHERE ProfID = @ProfID;
+        DELETE FROM UserTable WHERE userID = @ProfID;
+        PRINT 'Professor deleted successfully.';
+    END
+    ELSE
+    BEGIN
+        PRINT 'Professor not found in the database.';
+    END
+END;
